@@ -1,0 +1,16 @@
+{
+  "name": "tle",
+  "version": "1.0.0",
+  "description": "A satellite tracker web application using TLE data",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["satellite", "tracking", "tle", "astronomy"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "satellite.js": "^6.0.1"
+  }
+}
