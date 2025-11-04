@@ -531,11 +531,6 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
                   
                   <div class="result-card">
-                      <h3>Distance</h3>
-                      <p><strong>Range:</strong> ${position.range.toFixed(2)} km</p>
-                  </div>
-                  
-                  <div class="result-card">
                       <h3>Equatorial Coordinates</h3>
                       <p><strong>RA:</strong> ${raFormatted}</p>
                       <p><strong>DEC:</strong> ${decFormatted}</p>
@@ -615,17 +610,15 @@ document.addEventListener('DOMContentLoaded', function() {
           document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(1)').innerHTML = `<strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°`;
           document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(2)').innerHTML = `<strong>Elevation:</strong> ${position.elevation.toFixed(2)}°`;
           
-          // Update distance
-          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(1)').innerHTML = `<strong>Range:</strong> ${position.range.toFixed(2)} km`;
-          
           // Update RA/DEC in standard format (with proper caching to prevent flickering)
           const raHMS = raToHMS(position.rightAscension);
           const decDMS = decToDMS(position.declination);
           const raFormatted = `${raHMS.hours.toString().padStart(2, '0')}h ${raHMS.minutes.toString().padStart(2, '0')}m ${raHMS.seconds.toFixed(2).padStart(5, '0')}s`;
           const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
           
-          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(1)').innerHTML = `<strong>RA:</strong> ${raFormatted}`;
-          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(2)').innerHTML = `<strong>DEC:</strong> ${decFormatted}`;
+          // Now RA/DEC are in the 2nd card (since distance card was removed)
+          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(1)').innerHTML = `<strong>RA:</strong> ${raFormatted}`;
+          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(2)').innerHTML = `<strong>DEC:</strong> ${decFormatted}`;
           
           // Update geodetic coordinates
           document.querySelector('.geodetic-coords p:nth-of-type(1)').innerHTML = `<strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°`;
