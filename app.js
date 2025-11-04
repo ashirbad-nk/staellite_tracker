@@ -519,6 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const resultsHTML = `
           <div class="results-section">
               <div class="results-header">
+                  <h2>Satellite Tracker</h2>
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
               </div>
@@ -564,8 +565,9 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div style="margin-top: 20px; text-align: center;">
-                  <button id="back-to-input">Back to Input</button>
-                  <button id="new-satellite">Track New Satellite</button>
+                    <button id="back-to-input">Back to Input</button>
+
+                 
               </div>
           </div>
       `;
@@ -588,7 +590,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const toggleBtn = document.getElementById('toggle-live-update');
       const lastUpdateTime = document.getElementById('last-update-time');
       const backToInputBtn = document.getElementById('back-to-input');
-      const newSatelliteBtn = document.getElementById('new-satellite');
       
       let liveUpdateInterval;
       let isLiveUpdating = true;
@@ -645,19 +646,6 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Back to input button - this will restore the input form
       backToInputBtn.addEventListener('click', () => {
-          clearInterval(liveUpdateInterval);
-          // Show the input section and help section again
-          inputSection.style.display = 'block';
-          if (helpSection) helpSection.style.display = 'block';
-          const mainHeader = document.querySelector('header'); // The main page header with logo/title
-          if (mainHeader) mainHeader.style.display = 'block';
-          // Clear the results container
-          if (appContainer) appContainer.style.display = 'block';
-          resultsContainer.innerHTML = '';
-      });
-      
-      // New satellite button - same as back to input
-      newSatelliteBtn.addEventListener('click', () => {
           clearInterval(liveUpdateInterval);
           // Show the input section and help section again
           inputSection.style.display = 'block';

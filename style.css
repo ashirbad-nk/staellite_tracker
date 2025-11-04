@@ -57,26 +57,26 @@ body {
 header {
     text-align: center;
     margin-bottom: 10px; /* Reduced from 15px */
-    padding-bottom: 2px; /* Reduced from 10px */
+    padding-bottom: 1px; /* Reduced from 10px */
     border-bottom: 1px solid var(--border);
 }
 
 header img {
     height: 90px; /* Increased 3x from 30px */
     width: auto;
-    border-radius: 50%;
-    margin-bottom: 3px; /* Increased 3x from 1px */
+    border-radius: 20%;
+    margin-bottom: 0px; /* Increased 3x from 1px */
 }
 
 h1 {
-    font-size: 1rem; /* Reduced from 1.4rem (35% reduction) */
+    font-size: 2rem; /* Reduced from 1.4rem (35% reduction) */
     margin-bottom: 1px; /* Reduced from 5px */
     color: var(--primary);
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 0.5rem; /* Reduced from 0.7rem (35% reduction) */
+    font-size: 1rem; /* Reduced from 0.7rem (35% reduction) */
     color: var(--secondary);
     margin-bottom: 3px; /* Reduced from 4px */
 }
@@ -197,6 +197,7 @@ button:disabled {
     width: 150px; /* Reduced from 180px (35% reduction) */
     font-size: 13px; /* Reduced from 15px (35% reduction) */
     padding: 6px; /* Reduced from 9px (35% reduction) */
+    min-height: 30px;
 }
 
 /* Current location info */
@@ -263,6 +264,7 @@ button:disabled {
     font-size: 10px; /* Reduced from 12px (35% reduction) */
     width: 100%;
     max-width: 140px; /* Reduced from 160px (35% reduction) */
+    min-height: 30px;
 }
 
 #use-default-location {
@@ -403,17 +405,18 @@ button:disabled {
     padding: 5px 10px; /* Reduced from 7px 15px (35% reduction) */
     font-size: 12px; /* Reduced from 14px (35% reduction) */
     margin-bottom: 6px; /* Reduced from 9px (35% reduction) */
+    min-height: 30px;
 }
 
 #toggle-live-update.running {
     background: linear-gradient(135deg, var(--danger), #ff6b8b);
 }
 
-/* Navigation buttons */
 #back-to-input, #new-satellite {
     margin: 0 4px; /* Reduced from 6px (35% reduction) */
     background: linear-gradient(135deg, #6272a4, #44475a);
     padding: 5px 10px; /* Reduced from 7px 15px (35% reduction) */
+    min-height: 30px;
 }
 
 /* TLE display */
