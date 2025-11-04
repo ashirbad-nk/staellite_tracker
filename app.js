@@ -3,7 +3,7 @@ const DEFAULT_LOCATION = {
   name: "Mt Abu Observatory Gurushikhar",
   latitude: 24.625,  // degrees
   longitude: 72.715, // degrees
-  height: 1.68       // km above sea level
+  height: 1.68       // km above sea level (1680m)
 };
 
 /**
@@ -142,83 +142,194 @@ function getSatelliteError(errorCode) {
   }
 }
 
+// 3D forward motion space dots background
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('spaceCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        ctx.scale(dpr, dpr);
+    }
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Dot class with 3D positioning
+    class Dot {
+        constructor() {
+            this.reset();
+        }
+        
+        reset() {
+            const initial_z = 1000;
+            const p = 2000 / (initial_z + 2000);
+
+            const screenX = Math.random() * canvas.width;
+            const screenY = Math.random() * canvas.height;
+
+            this.x = (screenX - canvas.width / 2) / p + canvas.width / 2;
+            this.y = (screenY - canvas.height / 2) / p + canvas.height / 2;
+            this.z = initial_z;
+            
+            // Movement speed toward viewer
+            this.speed = 8 + Math.random() * 7;
+            
+            // Size and opacity based on distance
+            this.size = 0.5 + Math.random() * 1.5;
+            this.opacity = 0.3 + Math.random() * 0.7;
+            
+            // Color
+            const colors = [
+                '#ffffff', // White
+                '#ccccff', // Blue-ish
+                '#ffcaca', // Red-ish
+                '#caffca', // Green-ish
+                '#ffffcc'  // Yellow-ish
+            ];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        update() {
+            // Move toward viewer (decrease z)
+            this.z -= this.speed;
+            
+            // Reset when dot passes the viewer
+            if (this.z <= 0) {
+                this.reset();
+            }
+        }
+        
+        draw() {
+            // Calculate screen position with perspective
+            const perspective = 2000 / (this.z + 2000);
+            const screenX = (this.x - canvas.width/2) * perspective + canvas.width/2;
+            const screenY = (this.y - canvas.height/2) * perspective + canvas.height/2;
+            
+            // Draw simple dot
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.opacity;
+            ctx.fillRect(screenX - this.size / 2, screenY - this.size / 2, this.size, this.size);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+    
+    // Create dots with reduced density for better performance
+    const dots = [];
+    const dotCount = 400;
+    
+    for (let i = 0; i < dotCount; i++) {
+        dots.push(new Dot());
+    }
+    
+    // Animation loop optimized for performance
+    let lastTime = 0;
+    const targetFPS = 60;
+    const frameDuration = 1000 / targetFPS;
+    
+    function animate(currentTime) {
+        // Throttle frame rate for better performance
+        if (currentTime - lastTime < frameDuration) {
+            requestAnimationFrame(animate);
+            return;
+        }
+        lastTime = currentTime;
+        
+        // Clear canvas completely with black (removes any residual outline)
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Update and draw dots
+        for (let i = 0; i < dots.length; i++) {
+            dots[i].update();
+            dots[i].draw();
+        }
+        
+        requestAnimationFrame(animate);
+    }
+    
+    // Start animation
+    animate(0);
+});
+
 // Main application logic
 document.addEventListener('DOMContentLoaded', function() {
+  // Set up favicon
+  const favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/x-icon';
+  favicon.href = 'logo.png';
+  document.head.appendChild(favicon);
+  
   // DOM elements
   const tleInput = document.getElementById('tle-input');
   const tleError = document.getElementById('tle-error');
   const submitBtn = document.getElementById('submit-btn');
   const loading = document.getElementById('loading');
   const resultsContainer = document.getElementById('results-container');
+  const locationLoading = document.getElementById('location-loading');
+  const currentLocationInfo = document.getElementById('current-location-info');
+  const selectedLocationDisplay = document.getElementById('selected-location-display');
 
   // Location buttons
   const useDefaultLocationBtn = document.getElementById('use-default-location');
   const useBrowserLocationBtn = document.getElementById('use-browser-location');
-  const useManualLocationBtn = document.getElementById('use-manual-location');
   const locationError = document.getElementById('location-error');
-  const latitudeInput = document.getElementById('latitude');
-  const longitudeInput = document.getElementById('longitude');
-  const altitudeInput = document.getElementById('altitude');
 
   // Current observer location (default)
   let currentObserverLocation = { ...DEFAULT_LOCATION };
+  
+  // Update current location display
+  function updateLocationDisplay() {
+    selectedLocationDisplay.textContent = `${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)`;
+  }
+  
+  // Initialize display
+  updateLocationDisplay();
 
   // Event listeners for location selection
   useDefaultLocationBtn.addEventListener('click', () => {
       currentObserverLocation = { ...DEFAULT_LOCATION };
+      updateLocationDisplay();
       showSuccess('Default location selected: ' + DEFAULT_LOCATION.name);
   });
 
   useBrowserLocationBtn.addEventListener('click', () => {
       if (navigator.geolocation) {
-          loading.style.display = 'block';
+          // Show loading indicator and disable other buttons during location fetch
+          locationLoading.style.display = 'block';
+          useDefaultLocationBtn.disabled = true;
+          useBrowserLocationBtn.disabled = true;
+          
           navigator.geolocation.getCurrentPosition(
               (position) => {
                   currentObserverLocation = {
+                      name: "Browser Location",
                       latitude: position.coords.latitude,
                       longitude: position.coords.longitude,
-                      height: position.coords.altitude ? position.coords.altitude / 1000 : 0.07 // Convert to km
+                      height: position.coords.altitude ? position.coords.altitude / 1000 : 0.07 // Convert meters to km
                   };
-                  loading.style.display = 'none';
+                  locationLoading.style.display = 'none';
+                  useDefaultLocationBtn.disabled = false;
+                  useBrowserLocationBtn.disabled = false;
+                  updateLocationDisplay();
                   showSuccess(`Browser location set: ${position.coords.latitude.toFixed(4)}°N, ${position.coords.longitude.toFixed(4)}°E`);
               },
               (error) => {
-                  loading.style.display = 'none';
+                  locationLoading.style.display = 'none';
+                  useDefaultLocationBtn.disabled = false;
+                  useBrowserLocationBtn.disabled = false;
                   showLocationError(`Geolocation error: ${error.message}`);
               }
           );
       } else {
           showLocationError('Geolocation is not supported by this browser.');
       }
-  });
-
-  useManualLocationBtn.addEventListener('click', () => {
-      const lat = parseFloat(latitudeInput.value);
-      const lon = parseFloat(longitudeInput.value);
-      const alt = parseFloat(altitudeInput.value);
-
-      if (isNaN(lat) || isNaN(lon) || isNaN(alt)) {
-          showLocationError('Please enter valid coordinates (latitude, longitude, altitude)');
-          return;
-      }
-
-      if (lat < -90 || lat > 90) {
-          showLocationError('Latitude must be between -90 and 90 degrees');
-          return;
-      }
-
-      if (lon < -180 || lon > 180) {
-          showLocationError('Longitude must be between -180 and 180 degrees');
-          return;
-      }
-
-      currentObserverLocation = {
-          latitude: lat,
-          longitude: lon,
-          height: alt
-      };
-
-      showSuccess(`Manual coordinates set: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E, ${alt.toFixed(2)}km altitude`);
   });
 
   // Main submit button event listener
@@ -284,68 +395,116 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   });
 
+  // Function to convert decimal degrees to hours/minutes/seconds for RA
+  function raToHMS(ra) {
+    // RA is in degrees, convert to hours (1 hour = 15 degrees)
+    const totalHours = ra / 15.0;
+    const hours = Math.floor(totalHours);
+    const minutesDecimal = (totalHours - hours) * 60;
+    const minutes = Math.floor(minutesDecimal);
+    const seconds = (minutesDecimal - minutes) * 60;
+    
+    return {
+      hours: hours % 24,
+      minutes: minutes,
+      seconds: seconds
+    };
+  }
+
+  // Function to convert decimal degrees to degrees/minutes/seconds for DEC
+  function decToDMS(dec) {
+    const isNegative = dec < 0;
+    const absDec = Math.abs(dec);
+    const degrees = Math.floor(absDec);
+    const minutesDecimal = (absDec - degrees) * 60;
+    const minutes = Math.floor(minutesDecimal);
+    const seconds = (minutesDecimal - minutes) * 60;
+    
+    return {
+      degrees: isNegative ? -degrees : degrees,
+      minutes: minutes,
+      seconds: seconds
+    };
+  }
+
   // Function to display results
   function displayResults(position, tleLine1, tleLine2) {
       // Extract satellite name from TLE line 1 (characters 9-32, removing leading/trailing spaces)
       const satelliteName = tleLine1.substring(9, 32).trim() || 'Satellite';
 
-      // Create results HTML
+      // Convert RA and DEC to standard formats
+      const raHMS = raToHMS(position.rightAscension);
+      const decDMS = decToDMS(position.declination);
+      
+      // Format RA as hh:mm:ss
+      const raFormatted = `${raHMS.hours.toString().padStart(2, '0')}h ${raHMS.minutes.toString().padStart(2, '0')}m ${raHMS.seconds.toFixed(2).padStart(5, '0')}s`;
+      // Format DEC as deg:arcmin:arcsec
+      const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
+
+      // Create results HTML - this will replace the input form
       const resultsHTML = `
-          <div class="results-section" style="background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); margin: 20px auto; max-width: 1000px;">
+          <div class="results-section">
               <header style="text-align: center; margin-bottom: 20px;">
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
               </header>
               
-              <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                  <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db;">
+              <div class="results-grid">
+                  <div class="result-card">
                       <h3>Look Angles</h3>
                       <p><strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°</p>
                       <p><strong>Elevation:</strong> ${position.elevation.toFixed(2)}°</p>
                   </div>
                   
-                  <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #2ecc71;">
+                  <div class="result-card">
                       <h3>Distance</h3>
                       <p><strong>Range:</strong> ${position.range.toFixed(2)} km</p>
                   </div>
                   
-                  <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #9b59b6;">
-                      <h3>Coordinates</h3>
-                      <p><strong>RA:</strong> ${position.rightAscension.toFixed(2)}°</p>
-                      <p><strong>DEC:</strong> ${position.declination.toFixed(2)}°</p>
+                  <div class="result-card">
+                      <h3>Equatorial Coordinates</h3>
+                      <p><strong>RA:</strong> ${raFormatted}</p>
+                      <p><strong>DEC:</strong> ${decFormatted}</p>
                   </div>
               </div>
               
-              <div class="geodetic-coords" style="margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <div class="geodetic-coords result-card">
                   <h3>Satellite Geodetic Coordinates</h3>
                   <p><strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°</p>
                   <p><strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°</p>
                   <p><strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km</p>
               </div>
               
-              <div class="observer-info" style="margin-top: 20px; background: #e8f4fd; padding: 15px; border-radius: 8px;">
+              <div class="observer-info result-card">
                   <h3>Observer Location</h3>
                   <p><strong>Coordinates:</strong> ${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E</p>
-                  <p><strong>Altitude:</strong> ${currentObserverLocation.height.toFixed(2)} km</p>
+                  <p><strong>Altitude:</strong> ${Math.round(currentObserverLocation.height * 1000)}m</p>
               </div>
               
-              <div class="live-update-controls" style="margin-top: 20px; text-align: center;">
-                  <button id="toggle-live-update" style="background: #e74c3c; padding: 10px 20px; border: none; border-radius: 5px; color: white; cursor: pointer;">Pause Live Updates</button>
-                  <p id="last-update-time" style="margin-top: 10px; color: #7f8c8d;">Last update: ${new Date().toLocaleTimeString()}</p>
+              <div class="live-update-controls">
+                  <button id="toggle-live-update">Pause Live Updates</button>
+                  <p id="last-update-time">Last update: ${new Date().toLocaleTimeString()}</p>
               </div>
               
-              <div class="tle-display" style="margin-top: 20px; background: #f1f2f6; padding: 15px; border-radius: 8px; font-family: monospace;">
+              <div class="tle-display result-card">
                   <h3>TLE Data</h3>
                   <p>${tleLine1}</p>
                   <p>${tleLine2}</p>
               </div>
               
               <div style="margin-top: 20px; text-align: center;">
-                  <button id="back-to-input" style="background: #95a5a6; padding: 10px 20px; border: none; border-radius: 5px; color: white; cursor: pointer; margin-right: 10px;">Back to Input</button>
-                  <button id="new-satellite" style="background: #3498db; padding: 10px 20px; border: none; border-radius: 5px; color: white; cursor: pointer;">Track New Satellite</button>
+                  <button id="back-to-input">Back to Input</button>
+                  <button id="new-satellite">Track New Satellite</button>
               </div>
           </div>
       `;
+      
+      // Replace the input section with results, hide the help section
+      const inputSection = document.getElementById('input-section');
+      const helpSection = document.querySelector('.help-section');
+      
+      inputSection.style.display = 'none';
+      if (helpSection) helpSection.style.display = 'none';
       
       // Insert results into the container
       resultsContainer.innerHTML = resultsHTML;
@@ -372,14 +531,26 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Function to update just the values in the display
       const updateResultsDisplay = (position) => {
-          document.querySelector('.result-card:nth-child(1) p:nth-child(2)').innerHTML = `<strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°`;
-          document.querySelector('.result-card:nth-child(1) p:nth-child(3)').innerHTML = `<strong>Elevation:</strong> ${position.elevation.toFixed(2)}°`;
-          document.querySelector('.result-card:nth-child(2) p:nth-child(2)').innerHTML = `<strong>Range:</strong> ${position.range.toFixed(2)} km`;
-          document.querySelector('.result-card:nth-child(3) p:nth-child(2)').innerHTML = `<strong>RA:</strong> ${position.rightAscension.toFixed(2)}°`;
-          document.querySelector('.result-card:nth-child(3) p:nth-child(3)').innerHTML = `<strong>DEC:</strong> ${position.declination.toFixed(2)}°`;
-          document.querySelector('.geodetic-coords p:nth-child(2)').innerHTML = `<strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°`;
-          document.querySelector('.geodetic-coords p:nth-child(3)').innerHTML = `<strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°`;
-          document.querySelector('.geodetic-coords p:nth-child(4)').innerHTML = `<strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km`;
+          // Update look angles
+          document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(1)').innerHTML = `<strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°`;
+          document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(2)').innerHTML = `<strong>Elevation:</strong> ${position.elevation.toFixed(2)}°`;
+          
+          // Update distance
+          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(1)').innerHTML = `<strong>Range:</strong> ${position.range.toFixed(2)} km`;
+          
+          // Update RA/DEC in standard format (with proper caching to prevent flickering)
+          const raHMS = raToHMS(position.rightAscension);
+          const decDMS = decToDMS(position.declination);
+          const raFormatted = `${raHMS.hours.toString().padStart(2, '0')}h ${raHMS.minutes.toString().padStart(2, '0')}m ${raHMS.seconds.toFixed(2).padStart(5, '0')}s`;
+          const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
+          
+          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(1)').innerHTML = `<strong>RA:</strong> ${raFormatted}`;
+          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(2)').innerHTML = `<strong>DEC:</strong> ${decFormatted}`;
+          
+          // Update geodetic coordinates
+          document.querySelector('.geodetic-coords p:nth-of-type(1)').innerHTML = `<strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°`;
+          document.querySelector('.geodetic-coords p:nth-of-type(2)').innerHTML = `<strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°`;
+          document.querySelector('.geodetic-coords p:nth-of-type(3)').innerHTML = `<strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km`;
       };
       
       // Start live updates
@@ -389,27 +560,33 @@ document.addEventListener('DOMContentLoaded', function() {
           if (isLiveUpdating) {
               clearInterval(liveUpdateInterval);
               toggleBtn.textContent = 'Resume Live Updates';
-              toggleBtn.style.background = '#3498db';
               isLiveUpdating = false;
           } else {
               liveUpdateInterval = setInterval(updatePosition, 2000);
               toggleBtn.textContent = 'Pause Live Updates';
-              toggleBtn.style.background = '#e74c3c';
               isLiveUpdating = true;
               // Update immediately when resuming
               updatePosition();
           }
       });
       
-      // Back to input button
+      // Back to input button - this will restore the input form
       backToInputBtn.addEventListener('click', () => {
           clearInterval(liveUpdateInterval);
+          // Show the input section and help section again
+          inputSection.style.display = 'block';
+          if (helpSection) helpSection.style.display = 'block';
+          // Clear the results container
           resultsContainer.innerHTML = '';
       });
       
-      // New satellite button (same as back but keeps the form visible)
+      // New satellite button - same as back to input
       newSatelliteBtn.addEventListener('click', () => {
           clearInterval(liveUpdateInterval);
+          // Show the input section and help section again
+          inputSection.style.display = 'block';
+          if (helpSection) helpSection.style.display = 'block';
+          // Clear the results container
           resultsContainer.innerHTML = '';
       });
   }
@@ -430,270 +607,3 @@ document.addEventListener('DOMContentLoaded', function() {
       locationError.className = 'error';
   }
 });
-
-// DOM elements
-const tleInput = document.getElementById('tle-input');
-const tleError = document.getElementById('tle-error');
-const submitBtn = document.getElementById('submit-btn');
-const loading = document.getElementById('loading');
-const resultsContainer = document.getElementById('results-container');
-
-// Location buttons
-const useDefaultLocationBtn = document.getElementById('use-default-location');
-const useBrowserLocationBtn = document.getElementById('use-browser-location');
-const useManualLocationBtn = document.getElementById('use-manual-location');
-const locationError = document.getElementById('location-error');
-const latitudeInput = document.getElementById('latitude');
-const longitudeInput = document.getElementById('longitude');
-const altitudeInput = document.getElementById('altitude');
-
-// Current observer location (default)
-let currentObserverLocation = { ...DEFAULT_LOCATION };
-
-// Event listeners for location selection
-useDefaultLocationBtn.addEventListener('click', () => {
-    currentObserverLocation = { ...DEFAULT_LOCATION };
-    showSuccess('Default location selected: ' + DEFAULT_LOCATION.name);
-});
-
-useBrowserLocationBtn.addEventListener('click', () => {
-    if (navigator.geolocation) {
-        loading.style.display = 'block';
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                currentObserverLocation = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    height: position.coords.altitude ? position.coords.altitude / 1000 : 0.07 // Convert to km
-                };
-                loading.style.display = 'none';
-                showSuccess(`Browser location set: ${position.coords.latitude.toFixed(4)}°N, ${position.coords.longitude.toFixed(4)}°E`);
-            },
-            (error) => {
-                loading.style.display = 'none';
-                showLocationError(`Geolocation error: ${error.message}`);
-            }
-        );
-    } else {
-        showLocationError('Geolocation is not supported by this browser.');
-    }
-});
-
-useManualLocationBtn.addEventListener('click', () => {
-    const lat = parseFloat(latitudeInput.value);
-    const lon = parseFloat(longitudeInput.value);
-    const alt = parseFloat(altitudeInput.value);
-
-    if (isNaN(lat) || isNaN(lon) || isNaN(alt)) {
-        showLocationError('Please enter valid coordinates (latitude, longitude, altitude)');
-        return;
-    }
-
-    if (lat < -90 || lat > 90) {
-        showLocationError('Latitude must be between -90 and 90 degrees');
-        return;
-    }
-
-    if (lon < -180 || lon > 180) {
-        showLocationError('Longitude must be between -180 and 180 degrees');
-        return;
-    }
-
-    currentObserverLocation = {
-        latitude: lat,
-        longitude: lon,
-        height: alt
-    };
-
-    showSuccess(`Manual coordinates set: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E, ${alt.toFixed(2)}km altitude`);
-});
-
-// Main submit button event listener
-submitBtn.addEventListener('click', async () => {
-    const tleText = tleInput.value.trim();
-    
-    if (!tleText) {
-        showError('Please enter TLE data');
-        return;
-    }
-
-    // Split TLE text into two lines
-    const lines = tleText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
-    if (lines.length < 2) {
-        showError('TLE must contain exactly two lines');
-        return;
-    }
-
-    let tleLine1, tleLine2;
-    
-    // Determine which lines are the TLE lines
-    // If first line contains "1 ", it's the first line of TLE
-    if (lines[0].startsWith('1 ')) {
-        tleLine1 = lines[0];
-        tleLine2 = lines[1];
-    } else if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
-        // In case the satellite name is on first line
-        tleLine1 = lines[1];
-        tleLine2 = lines[2];
-    } else if (lines.length >= 2 && lines[1].startsWith('2 ')) {
-        // If the second line starts with '2 ', use previous line as '1 '
-        tleLine1 = lines[0];
-        tleLine2 = lines[1];
-    } else {
-        showError('Invalid TLE format. TLE lines must start with "1 " and "2 "');
-        return;
-    }
-
-    // Validate TLE format
-    if (!validateTLE(tleLine1, tleLine2)) {
-        showError('Invalid TLE format. Please check the TLE data.');
-        return;
-    }
-
-    // Show loading indicator
-    loading.style.display = 'block';
-    tleError.textContent = '';
-
-    try {
-        // Calculate satellite position
-        const result = await calculateSatellitePosition(tleLine1, tleLine2, currentObserverLocation);
-        
-        // Hide loading indicator
-        loading.style.display = 'none';
-        
-        // Display results
-        displayResults(result, tleLine1, tleLine2);
-    } catch (error) {
-        loading.style.display = 'none';
-        showError(`Error calculating satellite position: ${error.message}`);
-        console.error('Satellite calculation error:', error);
-    }
-});
-
-// Function to display results
-function displayResults(position, tleLine1, tleLine2) {
-    // Extract satellite name from TLE line 1 (characters 9-32, removing leading/trailing spaces)
-    const satelliteName = tleLine1.substring(9, 32).trim() || 'Satellite';
-
-    // Create results HTML
-    const resultsHTML = `
-        <div class="results-section" style="background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); margin: 20px auto; max-width: 1000px;">
-            <header style="text-align: center; margin-bottom: 20px;">
-                <h2>${satelliteName}</h2>
-                <p>Real-time Position Data</p>
-            </header>
-            
-            <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #3498db;">
-                    <h3>Look Angles</h3>
-                    <p><strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°</p>
-                    <p><strong>Elevation:</strong> ${position.elevation.toFixed(2)}°</p>
-                </div>
-                
-                <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #2ecc71;">
-                    <h3>Distance</h3>
-                    <p><strong>Range:</strong> ${position.range.toFixed(2)} km</p>
-                </div>
-                
-                <div class="result-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #9b59b6;">
-                    <h3>Coordinates</h3>
-                    <p><strong>RA:</strong> ${position.rightAscension.toFixed(2)}°</p>
-                    <p><strong>DEC:</strong> ${position.declination.toFixed(2)}°</p>
-                </div>
-            </div>
-            
-            <div class="geodetic-coords" style="margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                <h3>Satellite Geodetic Coordinates</h3>
-                <p><strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°</p>
-                <p><strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°</p>
-                <p><strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km</p>
-            </div>
-            
-            <div class="observer-info" style="margin-top: 20px; background: #e8f4fd; padding: 15px; border-radius: 8px;">
-                <h3>Observer Location</h3>
-                <p><strong>Coordinates:</strong> ${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E</p>
-                <p><strong>Altitude:</strong> ${currentObserverLocation.height.toFixed(2)} km</p>
-            </div>
-            
-            <div class="live-update-controls" style="margin-top: 20px; text-align: center;">
-                <button id="toggle-live-update" style="background: #e74c3c; padding: 10px 20px; border: none; border-radius: 5px; color: white; cursor: pointer;">Pause Live Updates</button>
-                <p id="last-update-time" style="margin-top: 10px; color: #7f8c8d;">Last update: ${new Date().toLocaleTimeString()}</p>
-            </div>
-            
-            <div class="tle-display" style="margin-top: 20px; background: #f1f2f6; padding: 15px; border-radius: 8px; font-family: monospace;">
-                <h3>TLE Data</h3>
-                <p>${tleLine1}</p>
-                <p>${tleLine2}</p>
-            </div>
-        </div>
-    `;
-    
-    // Insert results into the container
-    resultsContainer.innerHTML = resultsHTML;
-    
-    // Add event listener for live update toggle
-    const toggleBtn = document.getElementById('toggle-live-update');
-    const lastUpdateTime = document.getElementById('last-update-time');
-    
-    let liveUpdateInterval;
-    let isLiveUpdating = true;
-    
-    // Function to update positions
-    const updatePosition = async () => {
-        try {
-            const result = await calculateSatellitePosition(tleLine1, tleLine2, currentObserverLocation);
-            updateResultsDisplay(result);
-            lastUpdateTime.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
-        } catch (error) {
-            console.error('Error in live update:', error);
-        }
-    };
-    
-    // Function to update just the values in the display
-    const updateResultsDisplay = (position) => {
-        document.querySelector('.result-card:nth-child(1) p:nth-child(2)').innerHTML = `<strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°`;
-        document.querySelector('.result-card:nth-child(1) p:nth-child(3)').innerHTML = `<strong>Elevation:</strong> ${position.elevation.toFixed(2)}°`;
-        document.querySelector('.result-card:nth-child(2) p:nth-child(2)').innerHTML = `<strong>Range:</strong> ${position.range.toFixed(2)} km`;
-        document.querySelector('.result-card:nth-child(3) p:nth-child(2)').innerHTML = `<strong>RA:</strong> ${position.rightAscension.toFixed(2)}°`;
-        document.querySelector('.result-card:nth-child(3) p:nth-child(3)').innerHTML = `<strong>DEC:</strong> ${position.declination.toFixed(2)}°`;
-        document.querySelector('.geodetic-coords p:nth-child(2)').innerHTML = `<strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°`;
-        document.querySelector('.geodetic-coords p:nth-child(3)').innerHTML = `<strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°`;
-        document.querySelector('.geodetic-coords p:nth-child(4)').innerHTML = `<strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km`;
-    };
-    
-    // Start live updates
-    liveUpdateInterval = setInterval(updatePosition, 2000); // Update every 2 seconds
-    
-    toggleBtn.addEventListener('click', () => {
-        if (isLiveUpdating) {
-            clearInterval(liveUpdateInterval);
-            toggleBtn.textContent = 'Resume Live Updates';
-            toggleBtn.style.background = '#3498db';
-            isLiveUpdating = false;
-        } else {
-            liveUpdateInterval = setInterval(updatePosition, 2000);
-            toggleBtn.textContent = 'Pause Live Updates';
-            toggleBtn.style.background = '#e74c3c';
-            isLiveUpdating = true;
-            // Update immediately when resuming
-            updatePosition();
-        }
-    });
-}
-
-// Helper functions for displaying messages
-function showError(message) {
-    tleError.textContent = message;
-    tleError.className = 'error';
-}
-
-function showSuccess(message) {
-    tleError.textContent = message;
-    tleError.className = 'success';
-}
-
-function showLocationError(message) {
-    locationError.textContent = message;
-    locationError.className = 'error';
-}

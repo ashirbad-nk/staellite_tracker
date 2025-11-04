@@ -5,17 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Satellite Tracker</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png" type="image/x-icon">
 </head>
 <body>
+    <canvas id="spaceCanvas"></canvas>
     <div class="container">
         <header>
-            <h1>Satellite Tracker</h1>
-            <p class="subtitle">Track satellites in real-time using TLE data</p>
+            <img src="logo.png" alt="Satellite Tracker Logo" id="site-logo">
+            <div>
+                <h1>Satellite Tracker</h1>
+                <p class="subtitle">Track satellites in real-time using TLE data</p>
+            </div>
         </header>
         
         <section id="input-section" class="form-section">
             <div class="form-group">
                 <label for="tle-input">TLE Input (Two-Line Element Set)</label>
+                <p class="tle-instructions">Paste your TLE data (consisting of two lines starting with "1 " and "2 ") in the field below:</p>
                 <textarea 
                     id="tle-input" 
                     placeholder="Enter TLE data here. Example:
@@ -24,43 +30,24 @@
                 <div id="tle-error" class="error"></div>
             </div>
             
-            <div class="location-section">
-                <div class="location-option">
-                    <h3>Default Location</h3>
-                    <p>Mt Abu Observatory Gurushikhar</p>
-                    <p>Lat: 24.625°N, Lon: 72.715°E, Alt: 1680m</p>
-                    <button type="button" id="use-default-location">Use Default</button>
-                </div>
-                
-                <div class="location-option">
-                    <h3>Browser Location</h3>
-                    <p>Use your current GPS coordinates</p>
-                    <button type="button" id="use-browser-location">Use My Location</button>
-                    <div id="location-error" class="error"></div>
-                </div>
-                
-                <div class="location-option">
-                    <h3>Manual Coordinates</h3>
-                    <div class="coordinates">
-                        <div>
-                            <label for="latitude">Latitude (degrees)</label>
-                            <input type="number" id="latitude" step="any" placeholder="e.g., 24.625">
-                        </div>
-                        <div>
-                            <label for="longitude">Longitude (degrees)</label>
-                            <input type="number" id="longitude" step="any" placeholder="e.g., 72.715">
-                        </div>
-                        <div>
-                            <label for="altitude">Altitude (km)</label>
-                            <input type="number" id="altitude" step="any" placeholder="e.g., 1.68" value="0.07">
-                        </div>
-                    </div>
-                    <button type="button" id="use-manual-location">Use Manual Coordinates</button>
-                </div>
+            <button id="submit-btn">Track Satellite</button>
+            
+            <div id="current-location-info" class="location-info">
+                Current location selected: <span id="selected-location-display">Mt Abu Observatory Gurushikhar (24.625°N, 72.715°E, 1680m)</span>
             </div>
             
-            <div class="form-group" style="margin-top: 20px;">
-                <button id="submit-btn">Track Satellite</button>
+            <div class="location-section">
+                <div class="location-option">
+                    <h3>Select Location</h3>
+                    <button type="button" id="use-default-location">Use Default Location</button>
+                    <p style="margin: 10px 0;">or</p>
+                    <button type="button" id="use-browser-location">Use My Location</button>
+                    <div id="location-loading" class="location-loading">
+                        <div class="loading-spinner location-spinner"></div>
+                        <p>Getting your location...</p>
+</div>
+                    <div id="location-error" class="error"></div>
+                </div>
             </div>
             
             <div id="loading">

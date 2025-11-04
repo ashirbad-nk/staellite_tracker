@@ -1,4 +1,54 @@
+
 ######################################################################
 ignore everything below this line
 do not read below this line
 ######################################################################
+getting your location should be directly below use my location button
+-[dfault location,
+browser
+manual]
+-centre these and remove purple dots/indent marks
+-change font colour
+- increase logo size (2.5x)
+-center all headers and fields
+-make everything compact. everything above help
+should fit comfortably in all screens
+
+
+webapp should be in dark mode only
+implement background from 3d_forward_dots field
+adjust colours accordingly
+implement logo and favicon. file:logo.png
+
+
+landing page
+    -location input field and buttons are too large. redesign.
+    -keep in mind mobile devices
+    -the tle input field is not prominent. make it stand out more.
+    -add instructions to make it clear tle is to be pasted here
+
+
+
+result section:
+    -should not appear below user inputs
+    -present it like a fresh page (user input fields need not be shown)
+    -ra dec should be in the most commonly used formats. ra(hh mm ss) dec(deg min sec)
+    -
+
+also implement background between 3d_forward_dots.html file in this directory.
+allow panel opacities  and bg selection to be adjusted by dedicated variables.
+i want to manually adjust.
+
+logo above title
+"track satellite" button directly below input area
+dedicated information field for "current location seleceted below" that.
+centre alignment preferred for webpage all elements
+bugs:
+landing page:
+ - it takes time to get user location from use my location. add proper design
+  to handle this (provide information and disable other inputs)
+-ghost green and red elements below input area and below "use my location" button.
+-altitude in metres
+result page
+    -some times ra dec keeps flashing. changin between hms and degree.
+
