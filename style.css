@@ -62,10 +62,10 @@ header {
 }
 
 header img {
-    height: 30px; /* Reduced from 100px (about 70% reduction for more compact design) */
+    height: 90px; /* Increased 3x from 30px */
     width: auto;
     border-radius: 50%;
-    margin-bottom: 1px; /* Reduced from 6px */
+    margin-bottom: 3px; /* Increased 3x from 1px */
 }
 
 h1 {
