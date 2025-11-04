@@ -36,16 +36,36 @@
                 Current location selected: <span id="selected-location-display">Mt Abu Observatory Gurushikhar (24.625°N, 72.715°E, 1680m)</span>
             </div>
             
-            <div class="location-section">
-                <div class="location-option">
-                    <h3>Select Location</h3>
-                    <button type="button" id="use-default-location">Use Default Location</button>
-                    <p style="margin: 10px 0;">or</p>
-                    <button type="button" id="use-browser-location">Use My Location</button>
-                    <div id="location-loading" class="location-loading">
-                        <div class="loading-spinner location-spinner"></div>
-                        <p>Getting your location...</p>
+            <div class="location-section-wrapper">
+                <div class="location-section">
+                    <div class="location-option">
+                        <h3>Predefined Locations</h3>
+                        <button type="button" id="use-default-location">Use Default Location</button>
+                        <p style="margin: 8px 0; font-size: 0.8rem;">or</p>
+                        <button type="button" id="use-browser-location">Use My Location</button>
                     </div>
+                    <div class="location-option">
+                        <h3>Manual Coordinates</h3>
+                        <div class="coordinates">
+                            <div>
+                                <label for="latitude">Latitude (degrees)</label>
+                                <input type="number" id="latitude" step="any" placeholder="e.g., 24.625" min="-90" max="90">
+                            </div>
+                            <div>
+                                <label for="longitude">Longitude (degrees)</label>
+                                <input type="number" id="longitude" step="any" placeholder="e.g., 72.715" min="-180" max="180">
+                            </div>
+                            <div>
+                                <label for="altitude">Altitude (m)</label>
+                                <input type="number" id="altitude" step="any" placeholder="e.g., 1680" value="168">
+                            </div>
+                        </div>
+                        <button type="button" id="use-manual-location">Use Manual Coordinates</button>
+                    </div>
+                </div>
+                <div id="location-loading" class="location-loading-overlay">
+                    <div class="loading-spinner location-spinner"></div>
+                    <p>Getting your location...</p>
                 </div>
             </div>
             

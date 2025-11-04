@@ -57,20 +57,20 @@ body {
 header {
     text-align: center;
     margin-bottom: 10px; /* Reduced from 15px */
-    padding-bottom: 6px; /* Reduced from 10px */
+    padding-bottom: 2px; /* Reduced from 10px */
     border-bottom: 1px solid var(--border);
 }
 
 header img {
-    height: 45px; /* Reduced from 60px */
+    height: 100px; /* Reduced from 60px */
     width: auto;
     border-radius: 50%;
-    margin-bottom: 4px; /* Reduced from 6px */
+    margin-bottom: 1px; /* Reduced from 6px */
 }
 
 h1 {
     font-size: 1.4rem; /* Reduced from 1.8rem */
-    margin-bottom: 3px; /* Reduced from 5px */
+    margin-bottom: 1px; /* Reduced from 5px */
     color: var(--primary);
     letter-spacing: 1px;
 }
@@ -81,11 +81,25 @@ h1 {
     margin-bottom: 4px; /* Reduced from 6px */
 }
 
+/* App title area in results page */
+.app-title-area {
+    text-align: center;
+    margin-bottom: 10px; /* Reduced from 15px */
+    padding-bottom: 6px; /* Reduced from 10px */
+    border-bottom: 1px solid var(--border);
+}
+
+.app-title-area h1 {
+    font-size: 1.4rem; /* Reduced from standard h1 */
+    color: var(--primary);
+    margin: 0;
+}
+
 /* Results header (satellite name only) */
 .results-header {
     text-align: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    margin-bottom: 9px; /* Reduced from 15px */
+    padding-bottom: 6px; /* Reduced from 10px */
     border-bottom: 1px solid var(--border);
     color: var(--primary);
 }
@@ -130,7 +144,7 @@ input:focus, textarea:focus {
 }
 
 textarea {
-    height: 54px; /* Reduced from 90px by 40% */
+    height: 70px; /* Reduced from 90px by 40% */
     resize: vertical;
     font-family: monospace;
     line-height: 1.4; /* Reduced from 1.5 */
@@ -197,13 +211,14 @@ button:disabled {
     max-width: 800px;
 }
 
-/* Single location selection card */
+/* Two location selection cards side by side */
 .location-section {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
     gap: 9px; /* Reduced from 15px */
     margin: 15px 0; /* Reduced from 25px */
     max-width: 100%;
+    position: relative; /* Ensure proper stacking context for overlay */
 }
 
 .location-option {
@@ -216,7 +231,7 @@ button:disabled {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 150px; /* Reduced from 250px by 40% */
+    min-height: 170px; /* Adjusted to accommodate form elements */
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Reduced from 4px 10px */
 }
@@ -296,6 +311,10 @@ button:disabled {
 .geodetic-coords,
 .observer-info {
     min-height: auto;
+}
+
+.manual-location-card {
+    margin-top: 15px;
 }
 
 .result-card {
@@ -443,16 +462,28 @@ button:disabled {
     max-width: 800px;
 }
 
-.location-loading {
-    display: none;
-    margin: 10px auto;
-    padding: 10px;
-    background: rgba(40, 42, 54, 0.7);
-    border-radius: 6px;
-    border: 1px solid var(--border);
+/* Wrapper for location section to allow overlay */
+.location-section-wrapper {
+    position: relative;
+}
+
+.location-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(20, 20, 30, 0.85); /* Dark semi-transparent background */
+    border-radius: 8px; /* Match the container's border radius */
     text-align: center;
-    font-size: 0.9rem;
-    max-width: 300px;
+    z-index: 10;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px); /* Blur effect */
+    -webkit-backdrop-filter: blur(4px); /* Safari support */
+    border: 1px solid var(--border);
 }
 
 .location-spinner {
@@ -514,7 +545,7 @@ button:disabled {
     }
     
     .location-section {
-        grid-template-columns: 1fr; /* Single column */
+        grid-template-columns: 1fr; /* Single column on mobile */
     }
     
     .coordinates {

@@ -279,7 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Location buttons
   const useDefaultLocationBtn = document.getElementById('use-default-location');
   const useBrowserLocationBtn = document.getElementById('use-browser-location');
-  const locationError = document.getElementById('location-error');
+  const useManualLocationBtn = document.getElementById('use-manual-location');
+  const latitudeInput = document.getElementById('latitude');
+  const longitudeInput = document.getElementById('longitude');
+  const altitudeInput = document.getElementById('altitude');
 
   // Current observer location (default)
   let currentObserverLocation = { ...DEFAULT_LOCATION };
@@ -346,6 +349,55 @@ document.addEventListener('DOMContentLoaded', function() {
               resetLocationInfo();
           }, 3000);
       }
+  });
+
+  // Manual location functionality
+  useManualLocationBtn.addEventListener('click', () => {
+      const lat = parseFloat(latitudeInput.value);
+      const lon = parseFloat(longitudeInput.value);
+      const alt = parseFloat(altitudeInput.value) / 1000; // Convert meters to km
+
+      // Validate inputs
+      if (isNaN(lat) || isNaN(lon) || isNaN(alt)) {
+          showLocationError('Please enter valid coordinates (latitude, longitude, altitude in meters)');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      if (lat < -90 || lat > 90) {
+          showLocationError('Latitude must be between -90 and 90 degrees');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      if (lon < -180 || lon > 180) {
+          showLocationError('Longitude must be between -180 and 180 degrees');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      currentObserverLocation = {
+          name: "Manual Coordinates",
+          latitude: lat,
+          longitude: lon,
+          height: alt
+      };
+
+      updateLocationDisplay();
+      showSuccess(`Manual coordinates set: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E, ${Math.round(alt * 1000)}m altitude`);
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
   });
 
   // Main submit button event listener
@@ -465,7 +517,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create results HTML - this will replace the input form
       const resultsHTML = `
           <div class="results-section">
-              <div class="results-header">
+              <div class="results-header results-header-with-title">
+                  <h1>Satellite Tracker</h1>
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
               </div>
@@ -622,35 +675,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Helper functions for displaying messages in location-info area
   function showError(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--danger, #ff5555)';
-      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
-      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--danger, #ff5555)';
+          locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+          locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--danger, #ff5555)';
+              locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+              locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+          }
+      }
   }
 
   function showSuccess(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--success, #50fa7b)';
-      locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
-      locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--success, #50fa7b)';
+          locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
+          locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--success, #50fa7b)';
+              locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
+              locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+          }
+      }
   }
 
   function showLocationError(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--danger, #ff5555)';
-      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
-      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--danger, #ff5555)';
+          locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+          locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--danger, #ff5555)';
+              locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+              locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+          }
+      }
   }
   
   // Function to reset location info to normal state
   function resetLocationInfo() {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = `Current location selected: <span id="selected-location-display">${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)</span>`;
-      locationInfo.style.color = '';
-      locationInfo.style.backgroundColor = '';
-      locationInfo.style.border = '1px solid var(--border, #44475a)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = `Current location selected: <span id="selected-location-display">${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)</span>`;
+          locationInfo.style.color = '';
+          locationInfo.style.backgroundColor = '';
+          locationInfo.style.border = '1px solid var(--border, #44475a)';
+      }
   }
 });
