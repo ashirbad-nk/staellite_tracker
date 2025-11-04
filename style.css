@@ -212,10 +212,10 @@ button:disabled {
     max-width: 800px;
 }
 
-/* Three location selection cards side by side */
+/* Two location selection cards side by side */
 .location-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Three equal columns */
+    grid-template-columns: repeat(3, 1fr); /* Two equal columns */
     gap: 6px; /* Reduced from 9px (35% reduction) */
     margin: 10px 0; /* Reduced from 15px (35% reduction) */
     max-width: 100%;
