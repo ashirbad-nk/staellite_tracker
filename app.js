@@ -1097,4 +1097,76 @@ document.addEventListener('DOMContentLoaded', function() {
           locationInfo.style.border = '1px solid var(--border, #44475a)';
       }
   }
+  
+  // Modal functionality
+  const helpModal = document.getElementById('helpModal');
+  const aboutAppModal = document.getElementById('aboutAppModal');
+  const aboutMeModal = document.getElementById('aboutMeModal');
+  
+  const helpFormatsLink = document.getElementById('helpFormatsLink');
+  const aboutAppLink = document.getElementById('aboutAppLink');
+  const aboutMeLink = document.getElementById('aboutMeLink');
+  
+  const closeHelpModal = document.getElementById('closeHelpModal');
+  const closeAboutAppModal = document.getElementById('closeAboutAppModal');
+  const closeAboutMeModal = document.getElementById('closeAboutMeModal');
+  
+  const backFromHelpModal = document.getElementById('backFromHelpModal');
+  const backFromAboutAppModal = document.getElementById('backFromAboutAppModal');
+  const backFromAboutMeModal = document.getElementById('backFromAboutMeModal');
+  
+  // Open modals
+  helpFormatsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      helpModal.style.display = 'block';
+  });
+  
+  aboutAppLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      aboutAppModal.style.display = 'block';
+  });
+  
+  aboutMeLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      aboutMeModal.style.display = 'block';
+  });
+  
+  // Close modals with X button
+  closeHelpModal.addEventListener('click', () => {
+      helpModal.style.display = 'none';
+  });
+  
+  closeAboutAppModal.addEventListener('click', () => {
+      aboutAppModal.style.display = 'none';
+  });
+  
+  closeAboutMeModal.addEventListener('click', () => {
+      aboutMeModal.style.display = 'none';
+  });
+  
+  // Close modals when clicking outside the modal content
+  window.addEventListener('click', (e) => {
+      if (e.target === helpModal) {
+          helpModal.style.display = 'none';
+      }
+      if (e.target === aboutAppModal) {
+          aboutAppModal.style.display = 'none';
+      }
+      if (e.target === aboutMeModal) {
+          aboutMeModal.style.display = 'none';
+      }
+  });
+  
+  // Close modals with back buttons
+  backFromHelpModal.addEventListener('click', () => {
+      helpModal.style.display = 'none';
+  });
+  
+  backFromAboutAppModal.addEventListener('click', () => {
+      aboutAppModal.style.display = 'none';
+  });
+  
+  backFromAboutMeModal.addEventListener('click', () => {
+      aboutMeModal.style.display = 'none';
+  });
 });

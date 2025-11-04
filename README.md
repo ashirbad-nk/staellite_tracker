@@ -5,6 +5,7 @@ A browser-based single-page web application that tracks satellites in real-time 
 ## Features
 
 - Input TLE data for any satellite
+- Input OMM (Orbital Mean-Elements Message) data in both JSON and KVN (Key-Value Notation) formats
 - Real-time position calculation
 - Look angles (azimuth and elevation)
 - Right Ascension and Declination
@@ -25,7 +26,7 @@ A browser-based single-page web application that tracks satellites in real-time 
 - HTML5
 - CSS3
 - JavaScript (ES6+)
-- satellite.js library (loaded via CDN)
+- satellite.js library (loaded via CDN) - supporting both TLE and OMM formats
 
 ## Installation and Usage
 
@@ -52,7 +53,10 @@ Then open your browser and go to the appropriate URL (e.g., `http://localhost:80
 
 ## How to Use
 
-1. Enter TLE data in the input field (Two lines starting with "1 " and "2 ")
+1. Enter satellite data in the input field:
+   - TLE format: Two lines starting with "1 " and "2 "
+   - OMM JSON format: JSON object with orbital elements
+   - OMM KVN format: Key-value pairs in the format "KEY = value" on separate lines
 2. Select your observation location (default, browser location, or manual coordinates)
 3. Optionally set a custom UTC date/time for specific position calculation
 4. Click "Track Satellite"
@@ -81,6 +85,61 @@ Where:
 - GGG.GGGG - Mean anomaly (degrees)
 - HHHHH.HHHHHHHH - Mean motion (revolutions per day)
 
+## OMM Format (Orbital Mean-Elements Message)
+
+OMM is a newer format developed by CCSDS (Consultative Committee for Space Data Systems) to replace TLE format. It supports both JSON and KVN (Key-Value Notation) formats and provides enhanced capabilities:
+
+### OMM JSON Format Example:
+```json
+{
+  "OBJECT_NAME": "ISS (ZARYA)",
+  "OBJECT_ID": "1998-067A",
+  "EPOCH": "2023-03-26T05:19:34.116960",
+  "MEAN_MOTION": 15.49598850,
+  "ECCENTRICITY": 0.000315,
+  "INCLINATION": 51.6435,
+  "RA_OF_ASC_NODE": 106.9059,
+  "ARG_OF_PERICENTER": 268.2073,
+  "MEAN_ANOMALY": 91.8026,
+  "EPHEMERIS_TYPE": 0,
+  "CLASSIFICATION_TYPE": "U",
+  "NORAD_CAT_ID": 25544,
+  "ELEMENT_SET_NO": 999,
+  "REV_AT_EPOCH": 12345,
+  "BSTAR": 0.000036618,
+  "MEAN_MOTION_DOT": 0.00003322,
+  "MEAN_MOTION_DDOT": 0
+}
+```
+
+### OMM KVN Format Example:
+```
+CCSDS_OMM_VERS = 2.0
+OBJECT_NAME = ISS (ZARYA)
+OBJECT_ID = 1998-067A
+EPOCH = 2023-03-26T05:19:34.116960
+MEAN_MOTION = 15.49598850
+ECCENTRICITY = 0.000315
+INCLINATION = 51.6435
+RA_OF_ASC_NODE = 106.9059
+ARG_OF_PERICENTER = 268.2073
+MEAN_ANOMALY = 91.8026
+EPHEMERIS_TYPE = 0
+CLASSIFICATION_TYPE = U
+NORAD_CAT_ID = 25544
+ELEMENT_SET_NO = 999
+REV_AT_EPOCH = 12345
+BSTAR = 0.000036618
+MEAN_MOTION_DOT = 0.00003322
+MEAN_MOTION_DDOT = 0
+```
+
+The OMM format supports:
+- 9-digit catalog numbers (vs. 5-digit limitation in TLE)
+- ISO 8601 date format (YYYY-MM-DDTHH:MM:SS.ssssss)
+- More accurate orbital elements
+- Better precision for advanced tracking applications
+
 ## Project Structure
 
 ```
@@ -92,6 +151,14 @@ satellite-tracker/
 ├── README.md           # This file
 ├── logo.png            # Application logo
 ├── 3d_forward_dots.html # 3D starfield background implementation
+├── tle.txt             # Example TLE data
+├── omm_example.json    # Example OMM data in JSON format
+├── omm_example_kvn.txt # Example OMM data in KVN format
+├── kvntest.js          # KVN parsing test file
+├── omm_test.html       # OMM functionality test page
+├── function_check.html # satellite.js function availability test
+├── debug_kvn.html      # KVN debugging page
+├── plan.md             # Development plan and requirements
 └── prompts.txt         # Development prompts and notes
 ```
 
@@ -105,7 +172,7 @@ The application runs entirely in the browser:
 
 ## Future Enhancements
 
-- Satellite catalog integration (Celestrak API)
+- Satellite catalog integration (Celestrak API with both TLE and OMM support)
 - Sky chart visualization
 - Interactive 3D Earth visualization
 - Sun/moon position calculation
@@ -114,6 +181,7 @@ The application runs entirely in the browser:
 - Dark/light theme toggle
 - Multiple satellite tracking simultaneously
 - Improved orbital prediction algorithms
+- Enhanced OMM data source integration
 
 ## License
 

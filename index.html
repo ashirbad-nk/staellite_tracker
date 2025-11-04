@@ -6,6 +6,7 @@
     <title>Satellite Tracker</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <canvas id="spaceCanvas"></canvas>
@@ -90,45 +91,177 @@
             </div>
         </section>
         
-        <section class="help-section">
-            <h2>Help: TLE and OMM Formats</h2>
-            <h3>TLE Format</h3>
-            <p>Two-Line Element (TLE) sets are used to describe the orbital elements of satellites. Each TLE consists of two 69-character lines:</p>
-            
-            <div class="tle-format">
-                <p><strong>Line 1:</strong> 1 NSSSSECCYYDDD.DDDDDDDD +/-DDDDDDDD +/-DDD.DDDDDD N EEEE</p>
-                <p><strong>Line 2:</strong> 2 NSSSS IIII.IIII RRRR.RRRR RRRRRRR FFF.FFFF GGG.GGGG HHHHH.HHHHHHHH</p>
+        <!-- Links section -->
+        <div class="footer-links">
+            <a href="#" class="footer-link" id="helpFormatsLink">Help: TLE and OMM Formats</a>
+            <a href="#" class="footer-link" id="aboutAppLink">About Satellite Tracker</a>
+            <a href="#" class="footer-link" id="aboutMeLink">About Me</a>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeHelpModal">&times;</span>
+                <h2>Help: TLE and OMM Formats</h2>
+                <div class="modal-body">
+                    <h3>TLE Format</h3>
+                    <p>Two-Line Element (TLE) sets are used to describe the orbital elements of satellites. Each TLE consists of two 69-character lines:</p>
+                    
+                    <div class="tle-format">
+                        <p><strong>Line 1:</strong> 1 NSSSSECCYYDDD.DDDDDDDD +/-DDDDDDDD +/-DDD.DDDDDD N EEEE</p>
+                        <p><strong>Line 2:</strong> 2 NSSSS IIII.IIII RRRR.RRRR RRRRRRR FFF.FFFF GGG.GGGG HHHHH.HHHHHHHH</p>
+                    </div>
+                    
+                    <p>Where:</p>
+                    <ul>
+                        <li>NSSSS - Satellite number</li>
+                        <li>E - Classification (U=Unclassified)</li>
+                        <li>CCYYDDD - International Designator (Century, Year, Day of year)</li>
+                        <li>DDDDDDDDD - Element number and revolution number</li>
+                        <li>IIII.IIII - Inclination (degrees)</li>
+                        <li>RRRR.RRRR - Right ascension of the ascending node (degrees)</li>
+                        <li>RRRRRRR - Eccentricity (leading zero and decimal point not included)</li>
+                        <li>FFFF.FFFF - Argument of perigee (degrees)</li>
+                        <li>GGG.GGGG - Mean anomaly (degrees)</li>
+                        <li>HHHHH.HHHHHHHH - Mean motion (revolutions per day)</li>
+                    </ul>
+                    
+                    <h3>OMM Format</h3>
+                    <p>Orbital Mean-Elements Message (OMM) is a newer format developed by CCSDS to replace TLEs, supporting more advanced tracking capabilities.</p>
+                    
+                    <p>Two formats are supported:</p>
+                    <ul>
+                        <li><strong>JSON Format:</strong> A structured data format with key-value pairs</li>
+                        <li><strong>KVN Format:</strong> A human-readable format with "key = value" pairs on separate lines</li>
+                    </ul>
+                    
+                    <p>You can get TLE and OMM data from sources like <a href="https://www.celestrak.org/NORAD/elements/" target="_blank">Celestrak</a>.</p>
+                </div>
+                <button class="back-btn" id="backFromHelpModal">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </button>
             </div>
-            
-            <p>Where:</p>
-            <ul>
-                <li>NSSSS - Satellite number</li>
-                <li>E - Classification (U=Unclassified)</li>
-                <li>CCYYDDD - International Designator (Century, Year, Day of year)</li>
-                <li>DDDDDDDDD - Element number and revolution number</li>
-                <li>IIII.IIII - Inclination (degrees)</li>
-                <li>RRRR.RRRR - Right ascension of the ascending node (degrees)</li>
-                <li>RRRRRRR - Eccentricity (leading zero and decimal point not included)</li>
-                <li>FFFF.FFFF - Argument of perigee (degrees)</li>
-                <li>GGG.GGGG - Mean anomaly (degrees)</li>
-                <li>HHHHH.HHHHHHHH - Mean motion (revolutions per day)</li>
-            </ul>
-            
-            <h3>OMM Format</h3>
-            <p>Orbital Mean-Elements Message (OMM) is a newer format developed by CCSDS to replace TLEs, supporting more advanced tracking capabilities.</p>
-            
-            <p>Two formats are supported:</p>
-            <ul>
-                <li><strong>JSON Format:</strong> A structured data format with key-value pairs</li>
-                <li><strong>KVN Format:</strong> A human-readable format with "key = value" pairs on separate lines</li>
-            </ul>
-            
-            <p>You can get TLE and OMM data from sources like <a href="https://www.celestrak.org/NORAD/elements/" target="_blank">Celestrak</a>.</p>
-        </section>
+        </div>
+
+        <!-- About App Modal -->
+        <div id="aboutAppModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeAboutAppModal">&times;</span>
+                <h2>About Satellite Tracker</h2>
+                <div class="modal-body">
+                    <p class="about-text">
+                        Satellite Tracker is a <span class="highlight">free</span> browser-based tool that allows you to track satellites in real-time using TLE (Two-Line Element) or OMM (Orbital Mean-Elements Message) data.
+                    </p>
+                    <p class="about-text">
+                        The application calculates satellite positions using the <span class="highlight">satellite.js</span> library, providing accurate orbital mechanics calculations directly in your browser.
+                    </p>
+                    <p class="about-text">
+                        Whether you're a space enthusiast, amateur astronomer, or professional, Satellite Tracker provides the tools you need to track satellites without any server requirements.
+                    </p>
+                    <p class="about-text">
+                        All calculations happen directly in your browser - <span class="highlight">your data never leaves your device</span>, ensuring complete privacy and security.
+                    </p>
+                    <p class="about-text">
+                        The application supports both legacy TLE format and the newer OMM format for enhanced tracking capabilities.
+                    </p>
+                    
+                    <h3>Technical Details</h3>
+                    <p class="about-text">
+                        Satellite Tracker uses the <span class="highlight">SGP4/SDP4 orbital propagation algorithms</span> through the satellite.js library. The application architecture follows a <span class="highlight">modular design pattern</span> with separate modules for:
+                    </p>
+                    <ul style="color: var(--text-secondary); margin: 15px 0 15px 30px; line-height: 1.6;">
+                        <li>Orbital element parsing and validation</li>
+                        <li>Satellite position calculation</li>
+                        <li>Coordinate transformation</li>
+                        <li>User interface handling</li>
+                    </ul>
+                    <p class="about-text">
+                        The frontend is built with vanilla JavaScript for optimal performance without external dependencies. The responsive design uses CSS3 Flexbox and Grid layouts for consistent experience across devices.
+                    </p>
+                    <p class="about-text">
+                        <span class="highlight">No cookies or tracking scripts</span> are used. All processing is done locally in the browser.
+                    </p>
+                </div>
+                <button class="back-btn" id="backFromAboutAppModal">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </button>
+            </div>
+        </div>
+
+        <!-- About Me Modal -->
+        <div id="aboutMeModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeAboutMeModal">&times;</span>
+                <h2>About Me</h2>
+                <div class="modal-body">
+                    <div class="developer-section">
+                        <div class="developer-info" style="flex-direction: column; align-items: center; text-align: center;">
+                            <img src="ashirbad.jpg" alt="Ashirbad Nayak" class="developer-image" style="margin-bottom: 20px;">
+                            <div class="developer-text" style="text-align: justify;">
+                                <p style="text-align: justify;">
+                                    Hi, I'm <strong>Ashirbad Nayak</strong>, the developer behind Satellite Tracker. I'm passionate about space technology and satellite tracking, 
+                                    and I created this tool to make professional satellite tracking accessible to everyone.
+                                </p>
+                                <p style="text-align: justify;">
+                                    I believe in creating tools that enhance understanding of space technology without barriers. Satellite Tracker reflects my commitment to providing 
+                                    high-quality, free resources to the space and astronomy community.
+                                </p>
+                                <p style="text-align: justify;">
+                                    When I'm not coding, you can find me stargazing, learning about orbital mechanics, or working on other space-related projects.
+                                </p>
+                                
+                                <h3 style="font-size: 1.4rem; margin-top: 25px; text-align: center;">Contact Me</h3>
+                                <p class="about-text" style="white-space: nowrap; text-align: center;">
+                                    Email: ashirbadnayak9@gmail.com
+                                </p>
+                                <div class="social-links" style="justify-content: center; margin-top: 15px;">
+                                    <a href="mailto:ashirbadnayak9@gmail.com" class="social-link">
+                                        <i class="fas fa-envelope"></i> Email
+                                    </a>
+                                    <a href="https://www.linkedin.com/in/ashirbad-nayak-442009257/" target="_blank" class="social-link">
+                                        <i class="fab fa-linkedin"></i> LinkedIn
+                                    </a>
+                                    <a href="https://github.com/ashirbad-nk" target="_blank" class="social-link">
+                                        <i class="fab fa-github"></i> GitHub
+                                    </a>
+                                </div>
+                                
+                                <h3 style="font-size: 1.4rem; margin-top: 25px; text-align: center;">My Projects</h3>
+                                <div class="social-links" style="flex-direction: row; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 15px;">
+                                    <a href="https://filmulsionlab.pages.dev" target="_blank" class="social-link" style="background: var(--bg-tertiary); padding: 12px 20px; border-radius: 8px; width: auto; flex: 1 1 auto; min-width: 200px; max-width: 300px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-camera"></i> FilmulsionLab
+                                    </a>
+                                    <a href="https://photoidfacecropper.pages.dev" target="_blank" class="social-link" style="background: var(--bg-tertiary); padding: 12px 20px; border-radius: 8px; width: auto; flex: 1 1 auto; min-width: 200px; max-width: 300px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-user-circle"></i> Photo ID Face Cropper
+                                    </a>
+                                    <a href="https://starlightsecond.pages.dev" target="_blank" class="social-link" style="background: var(--bg-tertiary); padding: 12px 20px; border-radius: 8px; width: auto; flex: 1 1 auto; min-width: 200px; max-width: 300px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-moon"></i> Starlight Second
+                                    </a>
+                                    <a href="https://countto10.pages.dev" target="_blank" class="social-link" style="background: var(--bg-tertiary); padding: 12px 20px; border-radius: 8px; width: auto; flex: 1 1 auto; min-width: 200px; max-width: 300px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-calculator"></i> Count to 10
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="back-btn" id="backFromAboutMeModal">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </button>
+            </div>
+        </div>
     </div>
     
     <!-- The results will be loaded here -->
     <div id="results-container"></div>
+    
+    <!-- Copyright -->
+    <div class="copyright">
+        &copy; 2025 ashirbad nayak all rights reserved
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.1/dist/satellite.min.js"></script>
     <script src="app.js"></script>
