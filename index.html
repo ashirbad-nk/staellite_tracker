@@ -65,13 +65,15 @@
                     <div class="location-option">
                         <h3>Custom Time (UTC)</h3>
                         <div class="time-selection">
-                            <div>
-                                <label for="custom-date">Date (UTC)</label>
-                                <input type="date" id="custom-date">
-                            </div>
-                            <div>
-                                <label for="custom-time">Time (UTC)</label>
-                                <input type="time" id="custom-time" value="12:00">
+                            <div class="date-time-container">
+                                <div class="date-field">
+                                    <label for="custom-date">Date (UTC)</label>
+                                    <input type="date" id="custom-date">
+                                </div>
+                                <div class="time-field">
+                                    <label for="custom-time">Time (UTC)</label>
+                                    <input type="time" id="custom-time" value="12:00" step="1">
+                                </div>
                             </div>
                         </div>
                         <button type="button" id="use-custom-time">Set Custom Time</button>
