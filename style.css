@@ -62,35 +62,35 @@ header {
 }
 
 header img {
-    height: 100px; /* Reduced from 60px */
+    height: 30px; /* Reduced from 100px (about 70% reduction for more compact design) */
     width: auto;
     border-radius: 50%;
     margin-bottom: 1px; /* Reduced from 6px */
 }
 
 h1 {
-    font-size: 1.4rem; /* Reduced from 1.8rem */
+    font-size: 1rem; /* Reduced from 1.4rem (35% reduction) */
     margin-bottom: 1px; /* Reduced from 5px */
     color: var(--primary);
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 0.7rem; /* Reduced from 0.9rem */
+    font-size: 0.5rem; /* Reduced from 0.7rem (35% reduction) */
     color: var(--secondary);
-    margin-bottom: 4px; /* Reduced from 6px */
+    margin-bottom: 3px; /* Reduced from 4px */
 }
 
 /* App title area in results page */
 .app-title-area {
     text-align: center;
-    margin-bottom: 10px; /* Reduced from 15px */
-    padding-bottom: 6px; /* Reduced from 10px */
+    margin-bottom: 7px; /* Reduced from 10px (35% reduction) */
+    padding-bottom: 4px; /* Reduced from 6px (35% reduction) */
     border-bottom: 1px solid var(--border);
 }
 
 .app-title-area h1 {
-    font-size: 1.4rem; /* Reduced from standard h1 */
+    font-size: 1rem; /* Reduced from 1.4rem (35% reduction) */
     color: var(--primary);
     margin: 0;
 }
@@ -98,8 +98,8 @@ h1 {
 /* Results header (satellite name only) */
 .results-header {
     text-align: center;
-    margin-bottom: 9px; /* Reduced from 15px */
-    padding-bottom: 6px; /* Reduced from 10px */
+    margin-bottom: 6px; /* Reduced from 9px (35% reduction) */
+    padding-bottom: 4px; /* Reduced from 6px (35% reduction) */
     border-bottom: 1px solid var(--border);
     color: var(--primary);
 }
@@ -107,31 +107,31 @@ h1 {
 /* Form section */
 .form-section {
     background: var(--card-bg);
-    padding: 18px; /* Reduced from 30px */
-    border-radius: 8px; /* Reduced from 12px */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    margin-bottom: 15px; /* Reduced from 25px */
+    padding: 12px; /* Reduced from 18px (35% reduction) */
+    border-radius: 5px; /* Reduced from 8px (35% reduction) */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px; /* Reduced from 15px (35% reduction) */
     border: 1px solid var(--border);
 }
 
 .form-group {
-    margin-bottom: 15px; /* Reduced from 25px */
+    margin-bottom: 10px; /* Reduced from 15px (35% reduction) */
 }
 
 label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 7px; /* Reduced from 10px (35% reduction) */
     font-weight: 600;
     color: var(--text);
-    font-size: 1.1rem;
+    font-size: 0.8rem; /* Reduced from 1.1rem (35% reduction) */
 }
 
 input, textarea {
     width: 100%;
-    padding: 7px; /* Reduced from 12px (approx 40% reduction) */
-    border: 1px solid var(--border); /* Reduced from 2px */
-    border-radius: 5px; /* Reduced from 8px */
-    font-size: 14px; /* Reduced from 16px */
+    padding: 5px; /* Reduced from 7px (35% reduction) */
+    border: 1px solid var(--border);
+    border-radius: 3px; /* Reduced from 5px (35% reduction) */
+    font-size: 12px; /* Reduced from 14px (35% reduction) */
     transition: all 0.3s;
     background: rgba(30, 30, 40, 0.7);
     color: var(--text);
@@ -140,14 +140,14 @@ input, textarea {
 input:focus, textarea:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.4); /* Reduced from 3px */
+    box-shadow: 0 0 0 1px rgba(189, 147, 249, 0.4);
 }
 
 textarea {
-    height: 70px; /* Reduced from 90px by 40% */
+    height: 46px; /* Reduced from 70px (35% reduction) */
     resize: vertical;
     font-family: monospace;
-    line-height: 1.4; /* Reduced from 1.5 */
+    line-height: 1.3; /* Reduced from 1.4 */
 }
 
 /* TLE input with special styling */
@@ -165,17 +165,17 @@ textarea {
 button {
     background: linear-gradient(135deg, var(--secondary), var(--primary));
     color: #f8f8f2;
-    padding: 7px 15px; /* Reduced from 12px 25px */
+    padding: 5px 10px; /* Reduced from 7px 15px (35% reduction) */
     border: none;
-    border-radius: 5px; /* Reduced from 8px */
+    border-radius: 3px; /* Reduced from 5px (35% reduction) */
     cursor: pointer;
-    font-size: 14px; /* Reduced from 16px */
+    font-size: 12px; /* Reduced from 14px (35% reduction) */
     font-weight: 600;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 9px rgba(189, 147, 249, 0.3); /* Reduced from 4px 15px */
+    box-shadow: 0 1px 6px rgba(189, 147, 249, 0.3);
 }
 
 button:hover {
@@ -193,21 +193,21 @@ button:disabled {
 /* Submit button */
 #submit-btn {
     display: block;
-    margin: 12px auto; /* Reduced from 20px */
-    width: 180px; /* Reduced from 220px */
-    font-size: 15px; /* Reduced from 17px */
-    padding: 9px; /* Reduced from 14px */
+    margin: 8px auto; /* Reduced from 12px (35% reduction) */
+    width: 150px; /* Reduced from 180px (35% reduction) */
+    font-size: 13px; /* Reduced from 15px (35% reduction) */
+    padding: 6px; /* Reduced from 9px (35% reduction) */
 }
 
 /* Current location info */
 #current-location-info {
     text-align: center;
-    margin: 12px auto; /* Reduced from 20px */
-    padding: 9px; /* Reduced from 15px */
+    margin: 8px auto; /* Reduced from 12px (35% reduction) */
+    padding: 6px; /* Reduced from 9px (35% reduction) */
     background: rgba(68, 71, 90, 0.4);
-    border-radius: 5px; /* Reduced from 8px */
+    border-radius: 3px; /* Reduced from 5px (35% reduction) */
     border: 1px solid var(--border);
-    font-size: 0.9rem; /* Reduced from 1rem */
+    font-size: 0.8rem; /* Reduced from 0.9rem (35% reduction) */
     max-width: 800px;
 }
 
@@ -215,58 +215,58 @@ button:disabled {
 .location-section {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Two equal columns */
-    gap: 9px; /* Reduced from 15px */
-    margin: 15px 0; /* Reduced from 25px */
+    gap: 6px; /* Reduced from 9px (35% reduction) */
+    margin: 10px 0; /* Reduced from 15px (35% reduction) */
     max-width: 100%;
     position: relative; /* Ensure proper stacking context for overlay */
 }
 
 .location-option {
     background: var(--card-bg);
-    padding: 15px; /* Reduced from 25px */
-    border-radius: 6px; /* Reduced from 10px */
+    padding: 10px; /* Reduced from 15px (35% reduction) */
+    border-radius: 4px; /* Reduced from 6px (35% reduction) */
     text-align: center;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 170px; /* Adjusted to accommodate form elements */
+    min-height: 110px; /* Reduced from 170px (35% reduction) */
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Reduced from 4px 10px */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .location-option:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-3px); /* Reduced from -5px (35% reduction) */
+    box-shadow: 0 5px 13px rgba(0, 0, 0, 0.4);
     border-color: var(--primary);
 }
 
 .location-option h3 {
-    margin: 0 0 10px;
+    margin: 0 0 7px; /* Reduced from 10px (35% reduction) */
     color: var(--primary);
-    font-size: 1.2rem;
+    font-size: 0.9rem; /* Reduced from 1.2rem (35% reduction) */
     align-self: center;
 }
 
 .location-option p {
-    margin: 5px 0; /* Reduced from 8px */
+    margin: 3px 0; /* Reduced from 5px (35% reduction) */
     color: var(--text-secondary);
-    font-size: 0.8rem; /* Reduced from 0.95rem */
+    font-size: 0.7rem; /* Reduced from 0.8rem (35% reduction) */
     align-self: center;
 }
 
 .location-option button {
     align-self: center;
-    margin: 5px 0; /* Reduced from 8px */
-    padding: 6px 12px; /* Reduced from 10px 20px */
-    font-size: 12px; /* Reduced from 14px */
+    margin: 3px 0; /* Reduced from 5px (35% reduction) */
+    padding: 4px 8px; /* Reduced from 6px 12px (35% reduction) */
+    font-size: 10px; /* Reduced from 12px (35% reduction) */
     width: 100%;
-    max-width: 160px; /* Reduced from 200px */
+    max-width: 140px; /* Reduced from 160px (35% reduction) */
 }
 
 #use-default-location {
-    margin-top: 9px; /* Reduced from 15px */
+    margin-top: 6px; /* Reduced from 9px (35% reduction) */
 }
 
 #use-browser-location {
@@ -286,25 +286,25 @@ button:disabled {
 /* Results section */
 .results-section {
     background: var(--card-bg);
-    padding: 18px; /* Reduced from 30px */
-    border-radius: 7px; /* Reduced from 12px */
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); /* Reduced from 10px 30px */
-    margin: 12px 0; /* Reduced from 20px */
+    padding: 12px; /* Reduced from 18px (35% reduction) */
+    border-radius: 5px; /* Reduced from 7px (35% reduction) */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    margin: 8px 0; /* Reduced from 12px (35% reduction) */
     border: 1px solid var(--border);
 }
 
 .results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Reduced from 280px */
-    gap: 12px; /* Reduced from 20px */
-    margin-bottom: 15px; /* Reduced from 25px */
+    gap: 8px; /* Reduced from 12px (35% reduction) */
+    margin-bottom: 10px; /* Reduced from 15px (35% reduction) */
 }
 
 .coordinates-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Two equal columns side by side */
-    gap: 12px;
-    margin-bottom: 15px;
+    gap: 8px; /* Reduced from 12px (35% reduction) */
+    margin-bottom: 10px; /* Reduced from 15px (35% reduction) */
 }
 
 /* Ensure the geodetic and observer cards use the same height */
@@ -314,60 +314,60 @@ button:disabled {
 }
 
 .manual-location-card {
-    margin-top: 15px;
+    margin-top: 10px; /* Reduced from 15px (35% reduction) */
 }
 
 .result-card {
     background: rgba(30, 30, 40, 0.7);
-    padding: 12px; /* Reduced from 20px */
-    border-radius: 6px; /* Reduced from 10px */
-    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.3); /* Reduced from 4px 12px */
-    border-left: 3px solid var(--primary); /* Reduced from 4px */
+    padding: 8px; /* Reduced from 12px (35% reduction) */
+    border-radius: 4px; /* Reduced from 6px (35% reduction) */
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+    border-left: 2px solid var(--primary); /* Reduced from 3px (35% reduction) */
     transition: transform 0.3s;
     border: 1px solid var(--border);
     text-align: center;
 }
 
 .result-card:hover {
-    transform: translateY(-3px); /* Reduced from -5px */
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4); /* Reduced from 8px 16px */
+    transform: translateY(-2px); /* Reduced from -3px (35% reduction) */
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4);
 }
 
 .result-card h3 {
-    margin-bottom: 9px; /* Reduced from 15px */
+    margin-bottom: 6px; /* Reduced from 9px (35% reduction) */
     color: var(--primary);
-    font-size: 1rem; /* Reduced from 1.2rem */
+    font-size: 0.9rem; /* Reduced from 1rem (35% reduction) */
     border-bottom: 1px solid var(--border);
-    padding-bottom: 6px; /* Reduced from 10px */
+    padding-bottom: 4px; /* Reduced from 6px (35% reduction) */
 }
 
 .result-card p {
-    margin-bottom: 6px; /* Reduced from 10px */
-    font-size: 0.9rem; /* Reduced from 1.1rem */
+    margin-bottom: 4px; /* Reduced from 6px (35% reduction) */
+    font-size: 0.8rem; /* Reduced from 0.9rem (35% reduction) */
     color: var(--text);
 }
 
 .result-card p strong {
     display: block;
     color: var(--secondary);
-    margin-bottom: 3px; /* Reduced from 5px */
+    margin-bottom: 2px; /* Reduced from 3px (35% reduction) */
 }
 
 /* Live update controls */
 .live-update-controls {
     background: var(--card-bg);
-    padding: 12px; /* Reduced from 20px */
-    border-radius: 6px; /* Reduced from 10px */
+    padding: 8px; /* Reduced from 12px (35% reduction) */
+    border-radius: 4px; /* Reduced from 6px (35% reduction) */
     text-align: center;
-    margin: 15px 0; /* Reduced from 25px */
+    margin: 10px 0; /* Reduced from 15px (35% reduction) */
     border: 1px solid var(--border);
 }
 
 #toggle-live-update {
     background: linear-gradient(135deg, var(--success), #4af56c);
-    padding: 7px 15px; /* Reduced from 12px 25px */
-    font-size: 14px; /* Reduced from 16px */
-    margin-bottom: 9px; /* Reduced from 15px */
+    padding: 5px 10px; /* Reduced from 7px 15px (35% reduction) */
+    font-size: 12px; /* Reduced from 14px (35% reduction) */
+    margin-bottom: 6px; /* Reduced from 9px (35% reduction) */
 }
 
 #toggle-live-update.running {
@@ -376,21 +376,21 @@ button:disabled {
 
 /* Navigation buttons */
 #back-to-input, #new-satellite {
-    margin: 0 6px; /* Reduced from 10px */
+    margin: 0 4px; /* Reduced from 6px (35% reduction) */
     background: linear-gradient(135deg, #6272a4, #44475a);
-    padding: 7px 15px; /* Reduced from 12px 25px */
+    padding: 5px 10px; /* Reduced from 7px 15px (35% reduction) */
 }
 
 /* TLE display */
 .tle-display {
-    margin: 12px 0; /* Reduced from 20px */
-    padding: 9px; /* Reduced from 15px */
+    margin: 8px 0; /* Reduced from 12px (35% reduction) */
+    padding: 6px; /* Reduced from 9px (35% reduction) */
     background: rgba(30, 30, 40, 0.7);
-    border-radius: 5px; /* Reduced from 8px */
+    border-radius: 3px; /* Reduced from 5px (35% reduction) */
     border: 1px solid var(--border);
     font-family: monospace;
-    font-size: 0.8rem; /* Reduced from 0.9rem */
-    line-height: 1.4; /* Reduced from 1.6 */
+    font-size: 0.7rem; /* Reduced from 0.8rem (35% reduction) */
+    line-height: 1.3; /* Reduced from 1.4 */
 }
 
 .tle-display p {
@@ -477,13 +477,20 @@ button:disabled {
     border-radius: 8px; /* Match the container's border radius */
     text-align: center;
     z-index: 10;
-    display: none; /* Hidden by default */
-    flex-direction: column;
+    display: flex; /* Always use flex display */
+    flex-direction: column; /* Stack spinner and text vertically */
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(4px); /* Blur effect */
     -webkit-backdrop-filter: blur(4px); /* Safari support */
     border: 1px solid var(--border);
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Don't capture events when hidden */
+}
+
+.location-loading-overlay.show {
+    opacity: 1; /* Visible when shown */
+    pointer-events: auto; /* Capture events when visible */
 }
 
 .location-spinner {

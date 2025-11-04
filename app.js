@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
   useBrowserLocationBtn.addEventListener('click', () => {
       if (navigator.geolocation) {
           // Show loading indicator and disable other buttons during location fetch
-          locationLoading.style.display = 'block';
+          locationLoading.classList.add('show');
           useDefaultLocationBtn.disabled = true;
           useBrowserLocationBtn.disabled = true;
           
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       longitude: position.coords.longitude,
                       height: position.coords.altitude ? position.coords.altitude / 1000 : 0.07 // Convert meters to km
                   };
-                  locationLoading.style.display = 'none';
+                  locationLoading.classList.remove('show');
                   useDefaultLocationBtn.disabled = false;
                   useBrowserLocationBtn.disabled = false;
                   updateLocationDisplay();
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   }, 2000);
               },
               (error) => {
-                  locationLoading.style.display = 'none';
+                  locationLoading.classList.remove('show');
                   useDefaultLocationBtn.disabled = false;
                   useBrowserLocationBtn.disabled = false;
                   showLocationError(`Geolocation error: ${error.message}`);
@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
               }
           );
       } else {
+          locationLoading.classList.remove('show');
           showLocationError('Geolocation is not supported by this browser.');
           // Reset back to location display after 3 seconds
           setTimeout(() => {
@@ -517,8 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create results HTML - this will replace the input form
       const resultsHTML = `
           <div class="results-section">
-              <div class="results-header results-header-with-title">
-                  <h1>Satellite Tracker</h1>
+              <div class="results-header">
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
               </div>
@@ -578,11 +578,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Replace the input section with results, hide the help section and main header
       const inputSection = document.getElementById('input-section');
       const helpSection = document.querySelector('.help-section');
+      const appContainer = document.getElementById('app-container');
       const mainHeader = document.querySelector('header'); // The main page header with logo/title
       
       inputSection.style.display = 'none';
       if (helpSection) helpSection.style.display = 'none';
       if (mainHeader) mainHeader.style.display = 'none';
+      if (appContainer) appContainer.style.display = 'none';
       
       // Insert results into the container
       resultsContainer.innerHTML = resultsHTML;
@@ -657,6 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const mainHeader = document.querySelector('header'); // The main page header with logo/title
           if (mainHeader) mainHeader.style.display = 'block';
           // Clear the results container
+          if (appContainer) appContainer.style.display = 'block';
           resultsContainer.innerHTML = '';
       });
       
@@ -668,6 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (helpSection) helpSection.style.display = 'block';
           const mainHeader = document.querySelector('header'); // The main page header with logo/title
           if (mainHeader) mainHeader.style.display = 'block';
+          if (appContainer) appContainer.style.display = 'block';
           // Clear the results container
           resultsContainer.innerHTML = '';
       });
