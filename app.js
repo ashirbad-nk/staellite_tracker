@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // DOM elements
   const tleInput = document.getElementById('tle-input');
-  const tleError = document.getElementById('tle-error');
+
   const submitBtn = document.getElementById('submit-btn');
   const loading = document.getElementById('loading');
   const resultsContainer = document.getElementById('results-container');
@@ -297,6 +297,10 @@ document.addEventListener('DOMContentLoaded', function() {
       currentObserverLocation = { ...DEFAULT_LOCATION };
       updateLocationDisplay();
       showSuccess('Default location selected: ' + DEFAULT_LOCATION.name);
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
   });
 
   useBrowserLocationBtn.addEventListener('click', () => {
@@ -319,16 +323,28 @@ document.addEventListener('DOMContentLoaded', function() {
                   useBrowserLocationBtn.disabled = false;
                   updateLocationDisplay();
                   showSuccess(`Browser location set: ${position.coords.latitude.toFixed(4)}°N, ${position.coords.longitude.toFixed(4)}°E`);
+                  // Reset back to location display after 2 seconds
+                  setTimeout(() => {
+                      resetLocationInfo();
+                  }, 2000);
               },
               (error) => {
                   locationLoading.style.display = 'none';
                   useDefaultLocationBtn.disabled = false;
                   useBrowserLocationBtn.disabled = false;
                   showLocationError(`Geolocation error: ${error.message}`);
+                  // Reset back to location display after 3 seconds
+                  setTimeout(() => {
+                      resetLocationInfo();
+                  }, 3000);
               }
           );
       } else {
           showLocationError('Geolocation is not supported by this browser.');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
       }
   });
 
@@ -377,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Show loading indicator
       loading.style.display = 'block';
-      tleError.textContent = '';
 
       try {
           // Calculate satellite position
@@ -385,12 +400,18 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Hide loading indicator
           loading.style.display = 'none';
+          // Make sure location info shows normal state before showing results
+          resetLocationInfo();
           
           // Display results
           displayResults(result, tleLine1, tleLine2);
       } catch (error) {
           loading.style.display = 'none';
           showError(`Error calculating satellite position: ${error.message}`);
+          // Reset location info after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
           console.error('Satellite calculation error:', error);
       }
   });
@@ -444,10 +465,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create results HTML - this will replace the input form
       const resultsHTML = `
           <div class="results-section">
-              <header style="text-align: center; margin-bottom: 20px;">
+              <div class="results-header">
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
-              </header>
+              </div>
               
               <div class="results-grid">
                   <div class="result-card">
@@ -468,17 +489,19 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
               </div>
               
-              <div class="geodetic-coords result-card">
-                  <h3>Satellite Geodetic Coordinates</h3>
-                  <p><strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°</p>
-                  <p><strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°</p>
-                  <p><strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km</p>
-              </div>
-              
-              <div class="observer-info result-card">
-                  <h3>Observer Location</h3>
-                  <p><strong>Coordinates:</strong> ${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E</p>
-                  <p><strong>Altitude:</strong> ${Math.round(currentObserverLocation.height * 1000)}m</p>
+              <div class="coordinates-grid">
+                  <div class="geodetic-coords result-card">
+                      <h3>Satellite Geodetic Coordinates</h3>
+                      <p><strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°</p>
+                      <p><strong>Longitude:</strong> ${(position.positionGeodetic.longitude * 180 / Math.PI).toFixed(4)}°</p>
+                      <p><strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km</p>
+                  </div>
+                  
+                  <div class="observer-info result-card">
+                      <h3>Observer Location</h3>
+                      <p><strong>Coordinates:</strong> ${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E</p>
+                      <p><strong>Altitude:</strong> ${Math.round(currentObserverLocation.height * 1000)}m</p>
+                  </div>
               </div>
               
               <div class="live-update-controls">
@@ -499,12 +522,14 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
       `;
       
-      // Replace the input section with results, hide the help section
+      // Replace the input section with results, hide the help section and main header
       const inputSection = document.getElementById('input-section');
       const helpSection = document.querySelector('.help-section');
+      const mainHeader = document.querySelector('header'); // The main page header with logo/title
       
       inputSection.style.display = 'none';
       if (helpSection) helpSection.style.display = 'none';
+      if (mainHeader) mainHeader.style.display = 'none';
       
       // Insert results into the container
       resultsContainer.innerHTML = resultsHTML;
@@ -576,6 +601,8 @@ document.addEventListener('DOMContentLoaded', function() {
           // Show the input section and help section again
           inputSection.style.display = 'block';
           if (helpSection) helpSection.style.display = 'block';
+          const mainHeader = document.querySelector('header'); // The main page header with logo/title
+          if (mainHeader) mainHeader.style.display = 'block';
           // Clear the results container
           resultsContainer.innerHTML = '';
       });
@@ -586,24 +613,44 @@ document.addEventListener('DOMContentLoaded', function() {
           // Show the input section and help section again
           inputSection.style.display = 'block';
           if (helpSection) helpSection.style.display = 'block';
+          const mainHeader = document.querySelector('header'); // The main page header with logo/title
+          if (mainHeader) mainHeader.style.display = 'block';
           // Clear the results container
           resultsContainer.innerHTML = '';
       });
   }
 
-  // Helper functions for displaying messages
+  // Helper functions for displaying messages in location-info area
   function showError(message) {
-      tleError.textContent = message;
-      tleError.className = 'error';
+      const locationInfo = document.getElementById('selected-location-display').parentElement;
+      locationInfo.innerHTML = message;
+      locationInfo.style.color = 'var(--danger, #ff5555)';
+      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
   }
 
   function showSuccess(message) {
-      tleError.textContent = message;
-      tleError.className = 'success';
+      const locationInfo = document.getElementById('selected-location-display').parentElement;
+      locationInfo.innerHTML = message;
+      locationInfo.style.color = 'var(--success, #50fa7b)';
+      locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
+      locationInfo.style.border = '1px solid var(--success, #50fa7b)';
   }
 
   function showLocationError(message) {
-      locationError.textContent = message;
-      locationError.className = 'error';
+      const locationInfo = document.getElementById('selected-location-display').parentElement;
+      locationInfo.innerHTML = message;
+      locationInfo.style.color = 'var(--danger, #ff5555)';
+      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+  }
+  
+  // Function to reset location info to normal state
+  function resetLocationInfo() {
+      const locationInfo = document.getElementById('selected-location-display').parentElement;
+      locationInfo.innerHTML = `Current location selected: <span id="selected-location-display">${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)</span>`;
+      locationInfo.style.color = '';
+      locationInfo.style.backgroundColor = '';
+      locationInfo.style.border = '1px solid var(--border, #44475a)';
   }
 });

@@ -53,32 +53,41 @@ body {
     border: 1px solid var(--border);
 }
 
-/* Header styling */
+/* Header styling - kept minimal to reduce vertical space */
 header {
     text-align: center;
-    margin-bottom: 15px; /* Reduced from 25px */
-    padding-bottom: 10px; /* Reduced from 15px */
+    margin-bottom: 10px; /* Reduced from 15px */
+    padding-bottom: 6px; /* Reduced from 10px */
     border-bottom: 1px solid var(--border);
 }
 
 header img {
-    height: 60px; /* Reduced from 100px */
+    height: 45px; /* Reduced from 60px */
     width: auto;
     border-radius: 50%;
-    margin-bottom: 6px; /* Reduced from 10px */
+    margin-bottom: 4px; /* Reduced from 6px */
 }
 
 h1 {
-    font-size: 1.8rem; /* Reduced from 2.5rem */
-    margin-bottom: 5px; /* Reduced from 8px */
+    font-size: 1.4rem; /* Reduced from 1.8rem */
+    margin-bottom: 3px; /* Reduced from 5px */
     color: var(--primary);
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 0.9rem; /* Reduced from 1.2rem */
+    font-size: 0.7rem; /* Reduced from 0.9rem */
     color: var(--secondary);
-    margin-bottom: 6px; /* Reduced from 10px */
+    margin-bottom: 4px; /* Reduced from 6px */
+}
+
+/* Results header (satellite name only) */
+.results-header {
+    text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--primary);
 }
 
 /* Form section */
@@ -274,6 +283,19 @@ button:disabled {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Reduced from 280px */
     gap: 12px; /* Reduced from 20px */
     margin-bottom: 15px; /* Reduced from 25px */
+}
+
+.coordinates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns side by side */
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+/* Ensure the geodetic and observer cards use the same height */
+.geodetic-coords,
+.observer-info {
+    min-height: auto;
 }
 
 .result-card {
@@ -499,7 +521,8 @@ button:disabled {
         grid-template-columns: 1fr;
     }
     
-    .results-grid {
+    .results-grid,
+    .coordinates-grid {
         grid-template-columns: 1fr;
     }
     
