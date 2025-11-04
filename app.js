@@ -57,8 +57,9 @@ function calculateSatellitePosition(tleLine1, tleLine2, observerLocation) {
       throw new Error(`Satellite propagation error: ${getSatelliteError(satrec.error)}`);
     }
     
-    // Propagate satellite position to current time
-    const positionAndVelocity = satellite.propagate(satrec, new Date());
+    // Propagate satellite position to selected time (current time or custom time)
+    const targetDate = selectedCustomTime ? selectedCustomTime : new Date();
+    const positionAndVelocity = satellite.propagate(satrec, targetDate);
     
     if (positionAndVelocity === null) {
       throw new Error('Propagation failed - null result returned');
@@ -258,6 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Main application logic
+// Global variable for custom time
+let selectedCustomTime = null;
+
 document.addEventListener('DOMContentLoaded', function() {
   // Set up favicon
   const favicon = document.createElement('link');
@@ -279,7 +283,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Location buttons
   const useDefaultLocationBtn = document.getElementById('use-default-location');
   const useBrowserLocationBtn = document.getElementById('use-browser-location');
-  const locationError = document.getElementById('location-error');
+  const useManualLocationBtn = document.getElementById('use-manual-location');
+  const useCustomTimeBtn = document.getElementById('use-custom-time');
+  const resetToCurrentTimeBtn = document.getElementById('reset-to-current-time');
+  const customDateInput = document.getElementById('custom-date');
+  const customTimeInput = document.getElementById('custom-time');
+  const latitudeInput = document.getElementById('latitude');
+  const longitudeInput = document.getElementById('longitude');
+  const altitudeInput = document.getElementById('altitude');
 
   // Current observer location (default)
   let currentObserverLocation = { ...DEFAULT_LOCATION };
@@ -306,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
   useBrowserLocationBtn.addEventListener('click', () => {
       if (navigator.geolocation) {
           // Show loading indicator and disable other buttons during location fetch
-          locationLoading.style.display = 'block';
+          locationLoading.classList.add('show');
           useDefaultLocationBtn.disabled = true;
           useBrowserLocationBtn.disabled = true;
           
@@ -318,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       longitude: position.coords.longitude,
                       height: position.coords.altitude ? position.coords.altitude / 1000 : 0.07 // Convert meters to km
                   };
-                  locationLoading.style.display = 'none';
+                  locationLoading.classList.remove('show');
                   useDefaultLocationBtn.disabled = false;
                   useBrowserLocationBtn.disabled = false;
                   updateLocationDisplay();
@@ -329,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   }, 2000);
               },
               (error) => {
-                  locationLoading.style.display = 'none';
+                  locationLoading.classList.remove('show');
                   useDefaultLocationBtn.disabled = false;
                   useBrowserLocationBtn.disabled = false;
                   showLocationError(`Geolocation error: ${error.message}`);
@@ -340,12 +351,123 @@ document.addEventListener('DOMContentLoaded', function() {
               }
           );
       } else {
+          locationLoading.classList.remove('show');
           showLocationError('Geolocation is not supported by this browser.');
           // Reset back to location display after 3 seconds
           setTimeout(() => {
               resetLocationInfo();
           }, 3000);
       }
+  });
+
+  // Manual location functionality
+  useManualLocationBtn.addEventListener('click', () => {
+      const lat = parseFloat(latitudeInput.value);
+      const lon = parseFloat(longitudeInput.value);
+      const alt = parseFloat(altitudeInput.value) / 1000; // Convert meters to km
+
+      // Validate inputs
+      if (isNaN(lat) || isNaN(lon) || isNaN(alt)) {
+          showLocationError('Please enter valid coordinates (latitude, longitude, altitude in meters)');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      if (lat < -90 || lat > 90) {
+          showLocationError('Latitude must be between -90 and 90 degrees');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      if (lon < -180 || lon > 180) {
+          showLocationError('Longitude must be between -180 and 180 degrees');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+
+      currentObserverLocation = {
+          name: "Manual Coordinates",
+          latitude: lat,
+          longitude: lon,
+          height: alt
+      };
+
+      updateLocationDisplay();
+      showSuccess(`Manual coordinates set: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E, ${Math.round(alt * 1000)}m altitude`);
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
+  });
+
+  // Set initial date and time values
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const timeStr = now.toTimeString().substring(0, 5); // HH:MM format
+  
+  customDateInput.value = dateStr;
+  customTimeInput.value = timeStr;
+
+  // Custom time functionality
+  useCustomTimeBtn.addEventListener('click', () => {
+      const customDate = customDateInput.value;
+      const customTime = customTimeInput.value;
+      
+      if (!customDate || !customTime) {
+          showLocationError('Please select both date and time');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+      
+      // Create date in UTC
+      const fullDateTime = `${customDate}T${customTime}Z`;
+      const customDateTime = new Date(fullDateTime);
+      
+      // Check if date is valid
+      if (isNaN(customDateTime.getTime())) {
+          showLocationError('Invalid date or time format');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+      
+      selectedCustomTime = customDateTime;
+      showSuccess(`Custom time set: ${customDateTime.toUTCString()}`);
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
+  });
+  
+  // Reset to current time functionality
+  resetToCurrentTimeBtn.addEventListener('click', () => {
+      selectedCustomTime = null;
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().substring(0, 5);
+      
+      customDateInput.value = dateStr;
+      customTimeInput.value = timeStr;
+      
+      showSuccess('Reset to current time');
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
   });
 
   // Main submit button event listener
@@ -462,10 +584,15 @@ document.addEventListener('DOMContentLoaded', function() {
       // Format DEC as deg:arcmin:arcsec
       const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
 
+      // Prepare variables for template based on current time settings
+      const toggleButtonLabel = selectedCustomTime ? 'Live Updates Disabled' : 'Pause Live Updates';
+      const updateTimeText = selectedCustomTime ? selectedCustomTime.toUTCString() : new Date().toLocaleTimeString();
+      
       // Create results HTML - this will replace the input form
       const resultsHTML = `
           <div class="results-section">
               <div class="results-header">
+                  <h2>Satellite Tracker</h2>
                   <h2>${satelliteName}</h2>
                   <p>Real-time Position Data</p>
               </div>
@@ -475,11 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
                       <h3>Look Angles</h3>
                       <p><strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°</p>
                       <p><strong>Elevation:</strong> ${position.elevation.toFixed(2)}°</p>
-                  </div>
-                  
-                  <div class="result-card">
-                      <h3>Distance</h3>
-                      <p><strong>Range:</strong> ${position.range.toFixed(2)} km</p>
                   </div>
                   
                   <div class="result-card">
@@ -505,8 +627,8 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div class="live-update-controls">
-                  <button id="toggle-live-update">Pause Live Updates</button>
-                  <p id="last-update-time">Last update: ${new Date().toLocaleTimeString()}</p>
+                  <button id="toggle-live-update">${toggleButtonLabel}</button>
+                  <p id="last-update-time">Last update: ${updateTimeText}</p>
               </div>
               
               <div class="tle-display result-card">
@@ -516,8 +638,9 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div style="margin-top: 20px; text-align: center;">
-                  <button id="back-to-input">Back to Input</button>
-                  <button id="new-satellite">Track New Satellite</button>
+                    <button id="back-to-input">Back to Input</button>
+
+                 
               </div>
           </div>
       `;
@@ -525,11 +648,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Replace the input section with results, hide the help section and main header
       const inputSection = document.getElementById('input-section');
       const helpSection = document.querySelector('.help-section');
+      const appContainer = document.getElementById('app-container');
       const mainHeader = document.querySelector('header'); // The main page header with logo/title
       
       inputSection.style.display = 'none';
       if (helpSection) helpSection.style.display = 'none';
       if (mainHeader) mainHeader.style.display = 'none';
+      if (appContainer) appContainer.style.display = 'none';
       
       // Insert results into the container
       resultsContainer.innerHTML = resultsHTML;
@@ -538,7 +663,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const toggleBtn = document.getElementById('toggle-live-update');
       const lastUpdateTime = document.getElementById('last-update-time');
       const backToInputBtn = document.getElementById('back-to-input');
-      const newSatelliteBtn = document.getElementById('new-satellite');
       
       let liveUpdateInterval;
       let isLiveUpdating = true;
@@ -560,17 +684,15 @@ document.addEventListener('DOMContentLoaded', function() {
           document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(1)').innerHTML = `<strong>Azimuth:</strong> ${position.azimuth.toFixed(2)}°`;
           document.querySelector('.result-card:nth-of-type(1) p:nth-of-type(2)').innerHTML = `<strong>Elevation:</strong> ${position.elevation.toFixed(2)}°`;
           
-          // Update distance
-          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(1)').innerHTML = `<strong>Range:</strong> ${position.range.toFixed(2)} km`;
-          
           // Update RA/DEC in standard format (with proper caching to prevent flickering)
           const raHMS = raToHMS(position.rightAscension);
           const decDMS = decToDMS(position.declination);
           const raFormatted = `${raHMS.hours.toString().padStart(2, '0')}h ${raHMS.minutes.toString().padStart(2, '0')}m ${raHMS.seconds.toFixed(2).padStart(5, '0')}s`;
           const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
           
-          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(1)').innerHTML = `<strong>RA:</strong> ${raFormatted}`;
-          document.querySelector('.result-card:nth-of-type(3) p:nth-of-type(2)').innerHTML = `<strong>DEC:</strong> ${decFormatted}`;
+          // Now RA/DEC are in the 2nd card (since distance card was removed)
+          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(1)').innerHTML = `<strong>RA:</strong> ${raFormatted}`;
+          document.querySelector('.result-card:nth-of-type(2) p:nth-of-type(2)').innerHTML = `<strong>DEC:</strong> ${decFormatted}`;
           
           // Update geodetic coordinates
           document.querySelector('.geodetic-coords p:nth-of-type(1)').innerHTML = `<strong>Latitude:</strong> ${(position.positionGeodetic.latitude * 180 / Math.PI).toFixed(4)}°`;
@@ -578,15 +700,22 @@ document.addEventListener('DOMContentLoaded', function() {
           document.querySelector('.geodetic-coords p:nth-of-type(3)').innerHTML = `<strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km`;
       };
       
-      // Start live updates
-      liveUpdateInterval = setInterval(updatePosition, 2000); // Update every 2 seconds
+      // Start live updates if no custom time is selected
+      if (selectedCustomTime) {
+          // Disable live updates when custom time is selected
+          toggleBtn.disabled = true;
+          toggleBtn.title = 'Live updates disabled when custom time is selected';
+      } else {
+          // Enable live updates and start interval
+          liveUpdateInterval = setInterval(updatePosition, 2000); // Update every 2 seconds
+      }
       
       toggleBtn.addEventListener('click', () => {
           if (isLiveUpdating) {
               clearInterval(liveUpdateInterval);
               toggleBtn.textContent = 'Resume Live Updates';
               isLiveUpdating = false;
-          } else {
+          } else if (!selectedCustomTime) {
               liveUpdateInterval = setInterval(updatePosition, 2000);
               toggleBtn.textContent = 'Pause Live Updates';
               isLiveUpdating = true;
@@ -603,18 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (helpSection) helpSection.style.display = 'block';
           const mainHeader = document.querySelector('header'); // The main page header with logo/title
           if (mainHeader) mainHeader.style.display = 'block';
-          // Clear the results container
-          resultsContainer.innerHTML = '';
-      });
-      
-      // New satellite button - same as back to input
-      newSatelliteBtn.addEventListener('click', () => {
-          clearInterval(liveUpdateInterval);
-          // Show the input section and help section again
-          inputSection.style.display = 'block';
-          if (helpSection) helpSection.style.display = 'block';
-          const mainHeader = document.querySelector('header'); // The main page header with logo/title
-          if (mainHeader) mainHeader.style.display = 'block';
+          if (appContainer) appContainer.style.display = 'block';
           // Clear the results container
           resultsContainer.innerHTML = '';
       });
@@ -622,35 +740,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Helper functions for displaying messages in location-info area
   function showError(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--danger, #ff5555)';
-      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
-      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--danger, #ff5555)';
+          locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+          locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--danger, #ff5555)';
+              locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+              locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+          }
+      }
   }
 
   function showSuccess(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--success, #50fa7b)';
-      locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
-      locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--success, #50fa7b)';
+          locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
+          locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--success, #50fa7b)';
+              locationInfo.style.backgroundColor = 'rgba(80, 250, 123, 0.15)';
+              locationInfo.style.border = '1px solid var(--success, #50fa7b)';
+          }
+      }
   }
 
   function showLocationError(message) {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = message;
-      locationInfo.style.color = 'var(--danger, #ff5555)';
-      locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
-      locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = message;
+          locationInfo.style.color = 'var(--danger, #ff5555)';
+          locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+          locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+      } else {
+          // Fallback: try to find the current-location-info div directly
+          const locationInfo = document.getElementById('current-location-info');
+          if (locationInfo) {
+              locationInfo.innerHTML = message;
+              locationInfo.style.color = 'var(--danger, #ff5555)';
+              locationInfo.style.backgroundColor = 'rgba(255, 85, 85, 0.15)';
+              locationInfo.style.border = '1px solid var(--danger, #ff5555)';
+          }
+      }
   }
   
   // Function to reset location info to normal state
   function resetLocationInfo() {
-      const locationInfo = document.getElementById('selected-location-display').parentElement;
-      locationInfo.innerHTML = `Current location selected: <span id="selected-location-display">${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)</span>`;
-      locationInfo.style.color = '';
-      locationInfo.style.backgroundColor = '';
-      locationInfo.style.border = '1px solid var(--border, #44475a)';
+      const selectedLocationDisplay = document.getElementById('selected-location-display');
+      if (selectedLocationDisplay && selectedLocationDisplay.parentElement) {
+          const locationInfo = selectedLocationDisplay.parentElement;
+          locationInfo.innerHTML = `Current location selected: <span id="selected-location-display">${currentObserverLocation.name || 'Custom Location'} (${currentObserverLocation.latitude.toFixed(4)}°N, ${currentObserverLocation.longitude.toFixed(4)}°E, ${Math.round(currentObserverLocation.height * 1000)}m)</span>`;
+          locationInfo.style.color = '';
+          locationInfo.style.backgroundColor = '';
+          locationInfo.style.border = '1px solid var(--border, #44475a)';
+      }
   }
 });

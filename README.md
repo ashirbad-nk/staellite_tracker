@@ -7,16 +7,17 @@ A browser-based single-page web application that tracks satellites in real-time 
 - Input TLE data for any satellite
 - Real-time position calculation
 - Look angles (azimuth and elevation)
-- Satellite range/distance
 - Right Ascension and Declination
 - Geodetic coordinates
+- Custom UTC time selection (calculate positions for specific date/time)
 - Multiple location options:
   - Default location (Mt Abu Observatory Gurushikhar)
   - Browser geolocation
-  - Manual coordinates
-- Live position updates
+  - Manual coordinates (latitude, longitude, altitude)
+- Live position updates (automatically disabled when custom time is selected)
 - Pause/resume tracking
-- Responsive design
+- Compact card-based design
+- Responsive design with three location cards side-by-side on larger screens
 - No server required - runs entirely in the browser
 
 ## Technologies Used
@@ -53,10 +54,11 @@ Then open your browser and go to the appropriate URL (e.g., `http://localhost:80
 
 1. Enter TLE data in the input field (Two lines starting with "1 " and "2 ")
 2. Select your observation location (default, browser location, or manual coordinates)
-3. Click "Track Satellite"
-4. View real-time satellite position data
-5. Use pause/resume button to control live updates
-6. Use "Back to Input" or "Track New Satellite" buttons to return to the input form
+3. Optionally set a custom UTC date/time for specific position calculation
+4. Click "Track Satellite"
+5. View satellite position data (live updates automatically disabled when custom time is selected)
+6. Use pause/resume button to control live updates (when not using custom time)
+7. Use "Back to Input" button to return to the input form
 
 ## TLE Format
 
@@ -87,7 +89,10 @@ satellite-tracker/
 ├── app.js              # Main application logic (browser-based)
 ├── style.css           # Styling
 ├── package.json        # Project configuration
-└── README.md           # This file
+├── README.md           # This file
+├── logo.png            # Application logo
+├── 3d_forward_dots.html # 3D starfield background implementation
+└── prompts.txt         # Development prompts and notes
 ```
 
 ## How It Works
@@ -102,11 +107,13 @@ The application runs entirely in the browser:
 
 - Satellite catalog integration (Celestrak API)
 - Sky chart visualization
-- 3D Earth visualization
+- Interactive 3D Earth visualization
 - Sun/moon position calculation
 - Satellite pass predictions
 - Data export functionality
-- Web Worker implementation for heavy calculations
+- Dark/light theme toggle
+- Multiple satellite tracking simultaneously
+- Improved orbital prediction algorithms
 
 ## License
 
