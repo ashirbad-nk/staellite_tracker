@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Prepare variables for template based on current time settings
       const toggleButtonLabel = selectedCustomTime ? 'Live Updates Disabled' : 'Pause Live Updates';
-      const updateTimeText = selectedCustomTime ? selectedCustomTime.toUTCString() : new Date().toLocaleTimeString();
+      const updateTimeText = selectedCustomTime ? selectedCustomTime.toUTCString() : new Date().toUTCString();
       
       // Create results HTML - this will replace the input form
       const resultsHTML = `
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="live-update-controls">
                   <button id="toggle-live-update">${toggleButtonLabel}</button>
-                  <p id="last-update-time">Last update: ${updateTimeText}</p>
+                  <p id="last-update-time">Position calculated for: ${updateTimeText}</p>
               </div>
               
               <div class="tle-display result-card">
@@ -672,7 +672,7 @@ document.addEventListener('DOMContentLoaded', function() {
           try {
               const result = await calculateSatellitePosition(tleLine1, tleLine2, currentObserverLocation);
               updateResultsDisplay(result);
-              lastUpdateTime.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+              lastUpdateTime.textContent = `Position calculated for: ${new Date().toUTCString()}`;
           } catch (error) {
               console.error('Error in live update:', error);
           }
