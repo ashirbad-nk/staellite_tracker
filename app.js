@@ -57,8 +57,9 @@ function calculateSatellitePosition(tleLine1, tleLine2, observerLocation) {
       throw new Error(`Satellite propagation error: ${getSatelliteError(satrec.error)}`);
     }
     
-    // Propagate satellite position to current time
-    const positionAndVelocity = satellite.propagate(satrec, new Date());
+    // Propagate satellite position to selected time (current time or custom time)
+    const targetDate = selectedCustomTime ? selectedCustomTime : new Date();
+    const positionAndVelocity = satellite.propagate(satrec, targetDate);
     
     if (positionAndVelocity === null) {
       throw new Error('Propagation failed - null result returned');
@@ -258,6 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Main application logic
+// Global variable for custom time
+let selectedCustomTime = null;
+
 document.addEventListener('DOMContentLoaded', function() {
   // Set up favicon
   const favicon = document.createElement('link');
@@ -280,6 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const useDefaultLocationBtn = document.getElementById('use-default-location');
   const useBrowserLocationBtn = document.getElementById('use-browser-location');
   const useManualLocationBtn = document.getElementById('use-manual-location');
+  const useCustomTimeBtn = document.getElementById('use-custom-time');
+  const resetToCurrentTimeBtn = document.getElementById('reset-to-current-time');
+  const customDateInput = document.getElementById('custom-date');
+  const customTimeInput = document.getElementById('custom-time');
   const latitudeInput = document.getElementById('latitude');
   const longitudeInput = document.getElementById('longitude');
   const altitudeInput = document.getElementById('altitude');
@@ -401,6 +409,67 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 2000);
   });
 
+  // Set initial date and time values
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+  const timeStr = now.toTimeString().substring(0, 5); // HH:MM format
+  
+  customDateInput.value = dateStr;
+  customTimeInput.value = timeStr;
+
+  // Custom time functionality
+  useCustomTimeBtn.addEventListener('click', () => {
+      const customDate = customDateInput.value;
+      const customTime = customTimeInput.value;
+      
+      if (!customDate || !customTime) {
+          showLocationError('Please select both date and time');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+      
+      // Create date in UTC
+      const fullDateTime = `${customDate}T${customTime}Z`;
+      const customDateTime = new Date(fullDateTime);
+      
+      // Check if date is valid
+      if (isNaN(customDateTime.getTime())) {
+          showLocationError('Invalid date or time format');
+          // Reset back to location display after 3 seconds
+          setTimeout(() => {
+              resetLocationInfo();
+          }, 3000);
+          return;
+      }
+      
+      selectedCustomTime = customDateTime;
+      showSuccess(`Custom time set: ${customDateTime.toUTCString()}`);
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
+  });
+  
+  // Reset to current time functionality
+  resetToCurrentTimeBtn.addEventListener('click', () => {
+      selectedCustomTime = null;
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().substring(0, 5);
+      
+      customDateInput.value = dateStr;
+      customTimeInput.value = timeStr;
+      
+      showSuccess('Reset to current time');
+      // Reset back to location display after 2 seconds
+      setTimeout(() => {
+          resetLocationInfo();
+      }, 2000);
+  });
+
   // Main submit button event listener
   submitBtn.addEventListener('click', async () => {
       const tleText = tleInput.value.trim();
@@ -515,6 +584,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Format DEC as deg:arcmin:arcsec
       const decFormatted = `${decDMS.degrees}° ${decDMS.minutes}' ${decDMS.seconds.toFixed(2)}"`;
 
+      // Prepare variables for template based on current time settings
+      const toggleButtonLabel = selectedCustomTime ? 'Live Updates Disabled' : 'Pause Live Updates';
+      const updateTimeText = selectedCustomTime ? selectedCustomTime.toUTCString() : new Date().toLocaleTimeString();
+      
       // Create results HTML - this will replace the input form
       const resultsHTML = `
           <div class="results-section">
@@ -554,8 +627,8 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div class="live-update-controls">
-                  <button id="toggle-live-update">Pause Live Updates</button>
-                  <p id="last-update-time">Last update: ${new Date().toLocaleTimeString()}</p>
+                  <button id="toggle-live-update">${toggleButtonLabel}</button>
+                  <p id="last-update-time">Last update: ${updateTimeText}</p>
               </div>
               
               <div class="tle-display result-card">
@@ -627,15 +700,22 @@ document.addEventListener('DOMContentLoaded', function() {
           document.querySelector('.geodetic-coords p:nth-of-type(3)').innerHTML = `<strong>Height:</strong> ${position.positionGeodetic.height.toFixed(2)} km`;
       };
       
-      // Start live updates
-      liveUpdateInterval = setInterval(updatePosition, 2000); // Update every 2 seconds
+      // Start live updates if no custom time is selected
+      if (selectedCustomTime) {
+          // Disable live updates when custom time is selected
+          toggleBtn.disabled = true;
+          toggleBtn.title = 'Live updates disabled when custom time is selected';
+      } else {
+          // Enable live updates and start interval
+          liveUpdateInterval = setInterval(updatePosition, 2000); // Update every 2 seconds
+      }
       
       toggleBtn.addEventListener('click', () => {
           if (isLiveUpdating) {
               clearInterval(liveUpdateInterval);
               toggleBtn.textContent = 'Resume Live Updates';
               isLiveUpdating = false;
-          } else {
+          } else if (!selectedCustomTime) {
               liveUpdateInterval = setInterval(updatePosition, 2000);
               toggleBtn.textContent = 'Pause Live Updates';
               isLiveUpdating = true;
