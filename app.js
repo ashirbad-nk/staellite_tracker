@@ -45,16 +45,205 @@ function validateTLE(tleLine1, tleLine2) {
 }
 
 /**
- * Calculates satellite position based on TLE data and observer location
+ * Validates OMM format (JSON or KVN)
  */
-function calculateSatellitePosition(tleLine1, tleLine2, observerLocation) {
+function validateOMM(ommData) {
   try {
-    // Initialize satellite record using TLE
-    const satrec = satellite.twoline2satrec(tleLine1, tleLine2);
+    // If it's a string, try to parse it as JSON first
+    let ommObject;
+    if (typeof ommData === 'string') {
+      // Check if it looks like KVN format (contains key=value pairs)
+      if (ommData.includes('=')) {
+        // Try to parse as KVN format
+        ommObject = parseOMMKVN(ommData);
+      } else {
+        // Try to parse as JSON
+        ommObject = JSON.parse(ommData);
+      }
+    } else {
+      ommObject = ommData;
+    }
     
-    // Check for errors in satellite record
-    if (satrec.error) {
-      throw new Error(`Satellite propagation error: ${getSatelliteError(satrec.error)}`);
+    // Validate required OMM fields
+    const requiredFields = [
+      'OBJECT_NAME',
+      'NORAD_CAT_ID', 
+      'EPOCH',
+      'MEAN_MOTION',
+      'ECCENTRICITY',
+      'INCLINATION',
+      'RA_OF_ASC_NODE',
+      'ARG_OF_PERICENTER',
+      'MEAN_ANOMALY'
+    ];
+    
+    for (const field of requiredFields) {
+      if (ommObject[field] === undefined) {
+        return false;
+      }
+    }
+    
+    // Validate data types
+    if (typeof ommObject.NORAD_CAT_ID !== 'number' && typeof ommObject.NORAD_CAT_ID !== 'string') {
+      return false;
+    }
+    
+    if (typeof ommObject.EPOCH !== 'string') {
+      return false;
+    }
+    
+    if (isNaN(parseFloat(ommObject.MEAN_MOTION)) || isNaN(parseFloat(ommObject.ECCENTRICITY)) ||
+        isNaN(parseFloat(ommObject.INCLINATION)) || isNaN(parseFloat(ommObject.RA_OF_ASC_NODE)) ||
+        isNaN(parseFloat(ommObject.ARG_OF_PERICENTER)) || isNaN(parseFloat(ommObject.MEAN_ANOMALY))) {
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    // If parsing fails, it's not valid OMM
+    console.error('Error validating OMM:', error);
+    return false;
+  }
+}
+
+/**
+ * Parses OMM in KVN (Key-Value Notation) format to JSON object
+ */
+function parseOMMKVN(kvnString) {
+  const lines = kvnString.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const ommObject = {};
+  
+  // Define which fields should be treated as numeric vs string
+  const numericFields = new Set([
+    'NORAD_CAT_ID', 'MEAN_MOTION', 'ECCENTRICITY', 'INCLINATION', 'RA_OF_ASC_NODE',
+    'ARG_OF_PERICENTER', 'MEAN_ANOMALY', 'ELEMENT_SET_NO', 'REV_AT_EPOCH', 'BSTAR',
+    'MEAN_MOTION_DOT', 'MEAN_MOTION_DDOT', 'EPHEMERIS_TYPE'
+  ]);
+  
+  for (const line of lines) {
+    // Look for key = value pattern, allowing for optional whitespace
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (match) {
+      const key = match[1];
+      let value = match[2].trim();
+      
+      // Try to convert to appropriate data type
+      if (value === 'true') {
+        value = true;
+      } else if (value === 'false') {
+        value = false;
+      } else if (value === 'null') {
+        value = null;
+      } else if (key === 'EPOCH') {
+        // Special handling for EPOCH - keep as string but ensure it's in proper format
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.substring(1, value.length - 1);
+        }
+        // Validate that it's a proper date format
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+          console.warn(`Invalid date format for EPOCH: ${value}`);
+        }
+      } else if (numericFields.has(key)) {
+        // For known numeric fields, force conversion to number
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          value = numValue;
+          // Special validation for certain fields
+          if (key === 'ECCENTRICITY' && (numValue < 0 || numValue >= 1)) {
+            console.warn(`ECCENTRICITY value seems invalid: ${numValue}`);
+          }
+        } else {
+          // If parsing fails, keep as original string
+          // Remove quotes if present
+          if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.substring(1, value.length - 1);
+          }
+        }
+      } else if (!isNaN(value) && !isNaN(parseFloat(value))) {
+        // For other fields, convert to number if it looks like a number
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          value = numValue;
+          // Preserve decimal values properly - don't convert 2.0 to 2 if the original had decimals
+          if (value.toString().includes('.') && Number.isInteger(value)) {
+            // If it's mathematically an integer but was written as a decimal, keep as float
+            value = parseFloat(value.toFixed(1)); // Keep one decimal place to preserve format
+          } else if (Number.isInteger(value)) {
+            value = parseInt(value, 10); // Convert actual integers to int
+          }
+        }
+      } else {
+        // Remove quotes if present for non-numeric values
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.substring(1, value.length - 1);
+        }
+      }
+      
+      ommObject[key] = value;
+    }
+  }
+  
+  return ommObject;
+}
+
+/**
+ * Calculates satellite position based on TLE/OMM data and observer location
+ */
+function calculateSatellitePosition(data1, data2, observerLocation) {
+  try {
+    let satrec;
+    
+    // Check if first parameter is TLE format (starts with '1 ') or OMM format
+    if (typeof data1 === 'string' && data1.trim().startsWith('1 ') && typeof data2 === 'string' && data2.trim().startsWith('2 ')) {
+      // This is TLE format
+      satrec = satellite.twoline2satrec(data1, data2);
+      
+      // Check for errors in satellite record
+      if (satrec.error) {
+        throw new Error(`Satellite propagation error: ${getSatelliteError(satrec.error)}`);
+      }
+    } else {
+      // This might be OMM format - it could be a string in JSON or KVN format, or a JSON object
+      let ommObject;
+      
+      if (typeof data1 === 'string') {
+        // Check if it looks like KVN format (contains key=value pairs with at least one equals sign)
+        if ((data1.match(/=/g) || []).length > 0) {
+          // Parse as KVN format
+          ommObject = parseOMMKVN(data1);
+        } else {
+          // Parse as JSON format
+          ommObject = JSON.parse(data1);
+        }
+      } else {
+        // It's already a JSON object
+        ommObject = data1;
+      }
+      
+      // Validate OMM data
+      if (!validateOMM(ommObject)) {
+        throw new Error('Invalid OMM format');
+      }
+      
+      // Check if the json2satrec function exists
+      if (typeof satellite.json2satrec === 'function') {
+        // Initialize satellite record using OMM
+        satrec = satellite.json2satrec(ommObject);
+        
+        // Check for errors in satellite record (after calling json2satrec)
+        if (satrec && satrec.error) {
+          throw new Error(`Satellite propagation error from OMM: ${getSatelliteError(satrec.error)}`);
+        }
+      } else {
+        throw new Error('OMM format is not supported in this version of satellite.js. Please upgrade to version 6.0.0 or higher.');
+      }
+      
+      // Check for errors in satellite record
+      if (satrec.error) {
+        throw new Error(`Satellite propagation error: ${getSatelliteError(satrec.error)}`);
+      }
     }
     
     // Propagate satellite position to selected time (current time or custom time)
@@ -75,7 +264,7 @@ function calculateSatellitePosition(tleLine1, tleLine2, observerLocation) {
     const positionEci = positionAndVelocity.position;
     
     // Calculate GMST (Greenwich Mean Sidereal Time)
-    const gmst = satellite.gstime(new Date());
+    const gmst = satellite.gstime(targetDate);  // Use targetDate instead of current date for accuracy
     
     // Convert ECI to ECF (Earth Centered Fixed) coordinates
     const positionEcf = satellite.eciToEcf(positionEci, gmst);
@@ -472,44 +661,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Main submit button event listener
   submitBtn.addEventListener('click', async () => {
-      const tleText = tleInput.value.trim();
+      const inputText = tleInput.value.trim();
       
-      if (!tleText) {
-          showError('Please enter TLE data');
+      if (!inputText) {
+          showError('Please enter TLE or OMM data');
           return;
       }
 
-      // Split TLE text into two lines
-      const lines = tleText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      let data1, data2;
+      let isTLE = false;
+      let isOMM = false;
       
-      if (lines.length < 2) {
-          showError('TLE must contain exactly two lines');
-          return;
-      }
+      // Check if input looks like TLE format (starts with '1 ' and contains '2 ')
+      const lines = inputText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      
+      if (lines.length >= 2 && lines[0].startsWith('1 ') && lines.some(line => line.startsWith('2 '))) {
+          // This looks like TLE format
+          isTLE = true;
+          
+          // Determine which lines are the TLE lines
+          // If first line contains "1 ", it's the first line of TLE
+          if (lines[0].startsWith('1 ')) {
+              data1 = lines[0];
+              data2 = lines[1];
+          } else if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
+              // In case the satellite name is on first line
+              data1 = lines[1];
+              data2 = lines[2];
+          } else if (lines.length >= 2 && lines[1].startsWith('2 ')) {
+              // If the second line starts with '2 ', use previous line as '1 '
+              data1 = lines[0];
+              data2 = lines[1];
+          } else {
+              showError('Invalid TLE format. TLE lines must start with "1 " and "2 "');
+              return;
+          }
 
-      let tleLine1, tleLine2;
-      
-      // Determine which lines are the TLE lines
-      // If first line contains "1 ", it's the first line of TLE
-      if (lines[0].startsWith('1 ')) {
-          tleLine1 = lines[0];
-          tleLine2 = lines[1];
-      } else if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
-          // In case the satellite name is on first line
-          tleLine1 = lines[1];
-          tleLine2 = lines[2];
-      } else if (lines.length >= 2 && lines[1].startsWith('2 ')) {
-          // If the second line starts with '2 ', use previous line as '1 '
-          tleLine1 = lines[0];
-          tleLine2 = lines[1];
+          // Validate TLE format
+          if (!validateTLE(data1, data2)) {
+              showError('Invalid TLE format. Please check the TLE data.');
+              return;
+          }
+      } else if (inputText.includes('{') || inputText.includes('OBJECT_NAME')) {
+          // This might be OMM format (either JSON or KVN)
+          isOMM = true;
+          
+          // Check if json2satrec function is available before validating
+          if (typeof satellite.json2satrec !== 'function') {
+              showError('OMM format is not supported in this version of satellite.js. Please upgrade to version 6.0.0 or higher.');
+              return;
+          }
+          
+          // Validate OMM format
+          let ommObjectForValidation;
+          try {
+              if (inputText.includes('=')) {
+                  // It's KVN format, need to parse to validate
+                  ommObjectForValidation = parseOMMKVN(inputText);
+              } else {
+                  // It's JSON format
+                  ommObjectForValidation = JSON.parse(inputText);
+              }
+          } catch (e) {
+              showError(`Invalid OMM format: ${e.message}`);
+              return;
+          }
+          
+          if (!validateOMM(ommObjectForValidation)) {
+              showError('Invalid OMM format. Please check the OMM data and ensure required fields are present.');
+              return;
+          }
+          
+          data1 = inputText;  // For OMM, we pass the whole input as one parameter
+          data2 = null;       // No second parameter needed for OMM
       } else {
-          showError('Invalid TLE format. TLE lines must start with "1 " and "2 "');
-          return;
-      }
-
-      // Validate TLE format
-      if (!validateTLE(tleLine1, tleLine2)) {
-          showError('Invalid TLE format. Please check the TLE data.');
+          showError('Invalid format. Please enter either TLE (Two-Line Element) or OMM (Orbital Mean-Elements Message) data.');
           return;
       }
 
@@ -518,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       try {
           // Calculate satellite position
-          const result = await calculateSatellitePosition(tleLine1, tleLine2, currentObserverLocation);
+          const result = await calculateSatellitePosition(data1, data2, currentObserverLocation);
           
           // Hide loading indicator
           loading.style.display = 'none';
@@ -526,7 +752,27 @@ document.addEventListener('DOMContentLoaded', function() {
           resetLocationInfo();
           
           // Display results
-          displayResults(result, tleLine1, tleLine2);
+          if (isTLE) {
+              displayResults(result, data1, data2);
+          } else if (isOMM) {
+              // For OMM, we need to extract the object name for display
+              let objectName = 'Satellite';
+              try {
+                  let ommObject;
+                  if (inputText.includes('=')) {
+                      // It's KVN format, parse it to get the name
+                      ommObject = parseOMMKVN(inputText);
+                  } else {
+                      // It's JSON format
+                      ommObject = JSON.parse(inputText);
+                  }
+                  objectName = ommObject.OBJECT_NAME || 'Satellite';
+              } catch (e) {
+                  // If parsing fails, keep default name
+              }
+              // Display OMM data - for display purposes, we'll format it appropriately
+              displayResults(result, data1, objectName);  // data1 contains the full OMM data
+          }
       } catch (error) {
           loading.style.display = 'none';
           showError(`Error calculating satellite position: ${error.message}`);
@@ -571,9 +817,48 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Function to display results
-  function displayResults(position, tleLine1, tleLine2) {
-      // Extract satellite name from TLE line 1 (characters 9-32, removing leading/trailing spaces)
-      const satelliteName = tleLine1.substring(9, 32).trim() || 'Satellite';
+  function displayResults(position, data1, data2) {
+      // Determine if this is TLE or OMM format and extract satellite name accordingly
+      let satelliteName = 'Satellite';
+      let isTLE = false;
+      let isOMM = false;
+      let displayData = '';
+      
+      // Check if data1 is a TLE line (starts with '1 ')
+      if (typeof data1 === 'string' && data1.startsWith('1 ') && typeof data2 === 'string' && data2.startsWith('2 ')) {
+          isTLE = true;
+          // Extract satellite name from TLE line 1 (characters 9-32, removing leading/trailing spaces)
+          satelliteName = data1.substring(9, 32).trim() || 'Satellite';
+          displayData = `<p>${data1}</p><p>${data2}</p>`;
+      } else {
+          // This is OMM format
+          isOMM = true;
+          try {
+              let ommObject;
+              if (typeof data1 === 'string') {
+                  if (data1.includes('=')) {
+                      // It's KVN format
+                      ommObject = parseOMMKVN(data1);
+                  } else {
+                      // It's JSON format
+                      ommObject = JSON.parse(data1);
+                  }
+              }
+              satelliteName = (ommObject && ommObject.OBJECT_NAME) || 'Satellite';
+              
+              // Format the OMM data for display - if it's a long string, show a summary instead
+              if (typeof data1 === 'string' && data1.length > 200) {
+                  // For display purposes, just show that it's OMM data
+                  displayData = `<p>OMM (Orbital Mean-Elements Message) - ${satelliteName}</p>`;
+              } else {
+                  displayData = `<p>${data1.substring(0, 200)}${data1.length > 200 ? '...' : ''}</p>`;
+              }
+          } catch (e) {
+              // If parsing fails, use default name
+              satelliteName = 'Satellite';
+              displayData = `<p>${data1.substring(0, 100)}${data1.length > 100 ? '...' : ''}</p>`;
+          }
+      }
 
       // Convert RA and DEC to standard formats
       const raHMS = raToHMS(position.rightAscension);
@@ -587,6 +872,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Prepare variables for template based on current time settings
       const toggleButtonLabel = selectedCustomTime ? 'Live Updates Disabled' : 'Pause Live Updates';
       const updateTimeText = selectedCustomTime ? selectedCustomTime.toUTCString() : new Date().toUTCString();
+      
+      // Determine the header text for the data display section
+      const dataTypeHeader = isTLE ? 'TLE Data' : 'OMM Data';
       
       // Create results HTML - this will replace the input form
       const resultsHTML = `
@@ -632,9 +920,8 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div class="tle-display result-card">
-                  <h3>TLE Data</h3>
-                  <p>${tleLine1}</p>
-                  <p>${tleLine2}</p>
+                  <h3>${dataTypeHeader}</h3>
+                  ${displayData}
               </div>
               
               <div style="margin-top: 20px; text-align: center;">
@@ -670,7 +957,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Function to update positions
       const updatePosition = async () => {
           try {
-              const result = await calculateSatellitePosition(tleLine1, tleLine2, currentObserverLocation);
+              const result = await calculateSatellitePosition(data1, data2, currentObserverLocation);
               updateResultsDisplay(result);
               lastUpdateTime.textContent = `Position calculated for: ${new Date().toUTCString()}`;
           } catch (error) {
